@@ -1,0 +1,26 @@
+ext {
+    versions = [:]
+    libs = [:]
+}
+versions += [
+        springBootVersion        : "1.5.3.RELEASE",
+        groovy                   : "2.4.7",
+        junit                    : "4.11",
+        oauth                    : "1.2.1.RELEASE",
+
+]
+libs+=[
+        groovy                      : [group: 'org.codehaus.groovy', name: 'groovy-all', version: "${versions.groovy}"],
+        springBootParent            : [group: "org.springframework.boot", name: "spring-boot-starter-parent", version: "${versions.springBootVersion}"],
+        springBootStarter           : [group: "org.springframework.boot" ,name: "spring-boot-starter",version: "${versions.springBootVersion}"],
+        springBootStarterWeb        : [group: "org.springframework.boot", name: "spring-boot-starter-web", version: "${versions.springBootVersion}"],
+        springBootStarterTest       : [group: "org.springframework.boot", name: "spring-boot-starter-test", version: "${versions.springBootVersion}"],
+        springBootGradlePlugin      : [group: "org.springframework.boot", name: "spring-boot-gradle-plugin", version: "${versions.springBootVersion}"],
+        springBootTomcat            : [group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: "${versions.springBootVersion}"],
+        springBootStarterDataMongodb: [group: 'org.springframework.boot', name: 'spring-boot-starter-data-mongodb', version: "${versions.springBootVersion}"],
+        oauth                       : [group: 'org.springframework.cloud',name: 'spring-cloud-starter-oauth2',version: "${versions.oauth}"],
+        hibernateValidator          : 'org.hibernate:hibernate-validator:4.3.0.Final',
+        validationApi               : [group: 'javax.validation', name: 'validation-api', version: '1.0.0.GA'],
+        jackson                     : [group:'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'],
+        junit                       : [group: 'junit', name: 'junit', version: "${versions.junit}"],
+    ]

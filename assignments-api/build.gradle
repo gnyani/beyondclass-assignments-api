@@ -1,0 +1,13 @@
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile(libs.springBootStarter)
+    compile(libs.groovy)
+    compile(libs.hibernateValidator)
+    compile(libs.validationApi)
+    compile(libs.jackson)
+    compile(libs.springBootStarterDataMongodb)
+}

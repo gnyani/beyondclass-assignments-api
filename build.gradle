@@ -1,0 +1,26 @@
+apply from: 'gradle/dependencies.gradle'
+
+buildscript {
+
+	apply from: 'gradle/dependencies.gradle'
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		classpath libs.springBootGradlePlugin
+	}
+}
+allprojects {
+	apply plugin: 'groovy'
+	apply plugin: 'java'
+	apply plugin: 'idea'
+
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
+}
+
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '2.4'
+}

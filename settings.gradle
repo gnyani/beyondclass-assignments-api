@@ -1,0 +1,5 @@
+rootProject.name='Assignments'
+include 'assignments-api'
+include 'assignments-core'
+include 'assignments-web'
+

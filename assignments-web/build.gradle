@@ -1,0 +1,25 @@
+apply from: "../gradle/dependencies.gradle"
+apply plugin: 'org.springframework.boot'
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project (':assignments-api')
+    compile project (':assignments-core')
+    compile (libs.groovy)
+    compile (libs.springBootParent)
+    compile(libs.springBootStarterDataMongodb)
+    compile(libs.oauth)
+    compile(libs.junit)
+    compile(libs.springBootStarterWeb)
+    compile(libs.springBootStarter)
+}
+
+springBoot {
+    executable = true
+}
+
+mainClassName = 'com.engineeringeverything.Assignments.web.AssignmentsApplication'

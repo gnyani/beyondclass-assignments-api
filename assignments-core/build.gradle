@@ -1,0 +1,14 @@
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project (':assignments-api')
+    compile(libs.groovy)
+    compile(libs.springBootStarter)
+    compile(libs.springBootStarterDataMongodb)
+    compile(libs.springBootStarterTest)
+    compile(libs.springBootParent)
+    testCompile (libs.junit)
+}
