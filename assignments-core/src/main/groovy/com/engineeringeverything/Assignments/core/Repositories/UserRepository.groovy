@@ -12,5 +12,7 @@ public interface UserRepository extends MongoRepository<User,String> {
 
     public List<User> findByUniqueclassid(String uniqueclassid);
 
+    public int countByUniqueclassid(String uniqueclassid);
+
     public Long deleteUserByEmail(String email);
 }

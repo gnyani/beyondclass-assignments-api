@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 
-import java.time.LocalDate
 
 /**
  * Created by GnyaniMac on 02/10/17.
@@ -39,7 +38,7 @@ class CreateAssignmentRestController {
         createAssignment.setPropicurl(propicurl)
         String time = System.currentTimeMillis()
         createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
-                startyear,endyear,section,createAssignment.email,createAssignment.subject,time))
+                section,startyear,endyear,createAssignment.email,createAssignment.subject,time))
         def assignment = createAssignmentRepository.save(createAssignment)
         assignment ? new ResponseEntity<>("created successfully",HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }

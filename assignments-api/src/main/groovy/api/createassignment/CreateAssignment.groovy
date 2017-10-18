@@ -56,5 +56,7 @@ class CreateAssignment {
     @NotNull
     String[] questions
 
-    List<String> submittedstudents
+    HashSet<String> submittedstudents
+
+    HashMap<String,Date> submittedDates
 }

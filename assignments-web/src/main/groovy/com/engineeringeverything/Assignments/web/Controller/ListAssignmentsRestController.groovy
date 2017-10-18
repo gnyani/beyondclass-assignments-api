@@ -10,7 +10,6 @@ import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -41,10 +40,11 @@ class ListAssignmentsRestController {
         String startyear = splits[0]
         String section = splits[1]
         String endyear = Integer.parseInt(startyear)+ 4
+        def user = serviceUtilities.findUserByEmail(teacherAssignmentList.email)
 
-        def assignmentid = serviceUtilities.generateFileName(startyear,endyear,section,teacherAssignmentList.email)
+        def assignmentid = serviceUtilities.generateFileName(user.university,user.college,user.branch,section,startyear,endyear,teacherAssignmentList.email)
 
-        def list = createAssignmentRepository.findByAssignmentidLikeOrderByCreateDateDesc(assignmentid)
+        def list = createAssignmentRepository.findByAssignmentidStartingWithOrderByCreateDateDesc(assignmentid)
 
         list ? new ResponseEntity<>(list,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
     }
@@ -54,7 +54,7 @@ class ListAssignmentsRestController {
     public ResponseEntity<?> listStudentAssignments (@RequestBody String email){
 
         def user = serviceUtilities.findUserByEmail(email)
-        def assignmentid = serviceUtilities.generateFileName(user.university,user.college,user.branch,user.startYear,user.endYear,user.section)
+        def assignmentid = serviceUtilities.generateFileName(user.university,user.college,user.branch,user.section,user.startYear,user.endYear)
         def list = createAssignmentRepository.findByAssignmentidStartingWithAndSubmittedstudentsNotContainingOrderByLastdate(assignmentid,email)
         list ? new ResponseEntity<>(list,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
     }

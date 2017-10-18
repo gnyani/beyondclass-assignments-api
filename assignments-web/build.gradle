@@ -16,6 +16,7 @@ dependencies {
     compile(libs.junit)
     compile(libs.springBootStarterWeb)
     compile(libs.springBootStarter)
+
 }
 
 springBoot {
