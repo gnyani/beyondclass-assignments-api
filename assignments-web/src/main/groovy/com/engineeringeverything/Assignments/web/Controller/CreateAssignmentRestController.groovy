@@ -2,6 +2,7 @@ package com.engineeringeverything.Assignments.web.Controller
 
 import api.createassignment.CreateAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
+import com.engineeringeverything.Assignments.core.Service.NotificationService
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -26,6 +27,9 @@ class CreateAssignmentRestController {
     @Autowired
     CreateAssignmentRepository createAssignmentRepository
 
+    @Autowired
+    NotificationService notificationService
+
     @ResponseBody
     @PostMapping(value = '/create')
     public ResponseEntity<?> createAssignment( @RequestBody CreateAssignment createAssignment){
@@ -40,6 +44,8 @@ class CreateAssignmentRestController {
         createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
                 section,startyear,endyear,createAssignment.email,createAssignment.subject,time))
         def assignment = createAssignmentRepository.save(createAssignment)
+        def message ="You got a new assignment from your teacher ${user.firstName.toUpperCase()}"
+        notificationService.storeNotifications(user,message,"teacherstudentspace",createAssignment.batch)
         assignment ? new ResponseEntity<>("created successfully",HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
 

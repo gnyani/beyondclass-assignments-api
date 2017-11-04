@@ -23,4 +23,5 @@ libs+=[
         validationApi               : [group: 'javax.validation', name: 'validation-api', version: '1.0.0.GA'],
         jackson                     : [group:'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'],
         junit                       : [group: 'junit', name: 'junit', version: "${versions.junit}"],
+        groovyx                     : [group: 'org.codehaus.groovy.modules.http-builder', module: 'http-builder', version:'0.6']
     ]

@@ -35,7 +35,7 @@ class ServiceUtilities {
         repository.findByEmail(email)
     }
 
-    public String generateFileName(String ... strings) {
+    public static String generateFileName(String ... strings) {
         StringBuilder filename = new StringBuilder()
         strings.each {
             if(strings.last() == it)

@@ -16,7 +16,7 @@ class TeacherAssignmentStats {
 
     CreateAssignment createAssignment;
 
-    SubmitAssignment submitAssignment;
+    List<SubmitAssignment> submitAssignment;
 
     int numberOfDaysLeft;
 
@@ -29,4 +29,8 @@ class TeacherAssignmentStats {
     int percentdaysCompleted;
 
     int percentStudentsSubmitted;
+
+    int evaluationsDone;
+
+    int percentOfEvaluationsDone;
 }

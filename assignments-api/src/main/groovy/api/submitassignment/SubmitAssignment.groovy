@@ -5,6 +5,7 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.hibernate.validator.constraints.NotEmpty
 import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 
 import javax.validation.constraints.NotNull
@@ -27,12 +28,24 @@ class SubmitAssignment {
     @JsonProperty
     @NotNull
     @NotEmpty
+    @Indexed
     String email;
 
     @JsonProperty
     @NotEmpty
     @NotNull
     String[] answers;
+
+    @JsonProperty
+    @NotEmpty
+    @NotNull
+    long timespent
+
+    String propicurl;
+
+    double marksGiven;
+
+    AssignmentSubmissionStatus status;
 
     Date submissionDate = new Date();
 }

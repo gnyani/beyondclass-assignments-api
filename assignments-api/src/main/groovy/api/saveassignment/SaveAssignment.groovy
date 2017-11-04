@@ -29,4 +29,9 @@ class SaveAssignment {
     @NotEmpty
     @NotNull
     String[] answers;
+
+    @JsonProperty
+    @NotEmpty
+    @NotNull
+    long timespent;
 }

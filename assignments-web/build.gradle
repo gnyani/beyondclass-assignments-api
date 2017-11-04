@@ -16,6 +16,8 @@ dependencies {
     compile(libs.junit)
     compile(libs.springBootStarterWeb)
     compile(libs.springBootStarter)
+    compile group: 'org.codehaus.groovy.modules.http-builder', name: 'http-builder', version: '0.6'
+
 
 }
 
