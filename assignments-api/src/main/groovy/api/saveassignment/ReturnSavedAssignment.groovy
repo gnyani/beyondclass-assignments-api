@@ -8,4 +8,6 @@ class ReturnSavedAssignment {
     String[] questions
 
     String[] answers
+
+    long timespent
 }

@@ -8,9 +8,9 @@ import org.springframework.data.mongodb.repository.MongoRepository
  */
 interface CreateAssignmentRepository extends MongoRepository<CreateAssignment,String> {
 
-    List<CreateAssignment> findByAssignmentidLikeOrderByCreateDateDesc(String id)
+    List<CreateAssignment> findByAssignmentidStartingWithOrderByCreateDateDesc(String id)
 
-    List<CreateAssignment> findByAssignmentidStartingWithAndSubmittedstudentsNotContainingOrderByLastdate(String id,String email)
+    List<CreateAssignment> findByAssignmentidStartingWithAndSubmittedstudentsNotContainingAndLastdateAfterOrderByLastdate(String id, String email, Date date)
 
     CreateAssignment findByAssignmentid(String id)
     

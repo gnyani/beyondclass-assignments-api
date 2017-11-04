@@ -2,6 +2,7 @@ package com.engineeringeverything.Assignments.web.Controller
 
 import api.createassignment.CreateAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
+import com.engineeringeverything.Assignments.core.Service.NotificationService
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 
-import java.time.LocalDate
 
 /**
  * Created by GnyaniMac on 02/10/17.
@@ -27,6 +27,9 @@ class CreateAssignmentRestController {
     @Autowired
     CreateAssignmentRepository createAssignmentRepository
 
+    @Autowired
+    NotificationService notificationService
+
     @ResponseBody
     @PostMapping(value = '/create')
     public ResponseEntity<?> createAssignment( @RequestBody CreateAssignment createAssignment){
@@ -39,8 +42,10 @@ class CreateAssignmentRestController {
         createAssignment.setPropicurl(propicurl)
         String time = System.currentTimeMillis()
         createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
-                startyear,endyear,section,createAssignment.email,createAssignment.subject,time))
+                section,startyear,endyear,createAssignment.email,createAssignment.subject,time))
         def assignment = createAssignmentRepository.save(createAssignment)
+        def message ="You got a new assignment from your teacher ${user.firstName.toUpperCase()}"
+        notificationService.storeNotifications(user,message,"teacherstudentspace",createAssignment.batch)
         assignment ? new ResponseEntity<>("created successfully",HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
 

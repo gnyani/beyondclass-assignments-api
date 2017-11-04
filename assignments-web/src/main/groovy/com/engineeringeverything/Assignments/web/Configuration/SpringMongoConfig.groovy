@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.MongoDbFactory
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter
 import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
 
@@ -39,13 +40,17 @@ public class SpringMongoConfig extends AbstractMongoConfiguration {
 	 public MongoTemplate mongoTemplate() throws Exception {
 
 		MongoTemplate mongoTemplate = new MongoTemplate(mongoDbFactory());
-		return mongoTemplate;
+		 ((MappingMongoConverter)
+				 mongoTemplate.getConverter()).setMapKeyDotReplacement("#dot#");
+
+		 return mongoTemplate;
 
 	}
 	@Override
 	protected String getDatabaseName() {
-		return "test";
+		return "mydatabase";
 	}
+
 
     @Bean(name = "assignments")
     public GridFsTemplate gridFsTemplate() throws Exception {

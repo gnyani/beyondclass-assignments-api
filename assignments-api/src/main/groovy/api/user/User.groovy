@@ -69,6 +69,9 @@ public class User {
      String[] batches;
 
     @JsonProperty
+    double points;
+
+    @JsonProperty
      String hostel;
 
     @JsonProperty
