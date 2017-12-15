@@ -5,7 +5,7 @@ package api.saveassignment
  */
 class ReturnSavedAssignment {
 
-    String[] questions
+    Object[] questions
 
     String[] answers
 

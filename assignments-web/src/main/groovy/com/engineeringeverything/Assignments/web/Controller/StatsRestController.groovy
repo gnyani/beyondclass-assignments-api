@@ -94,7 +94,7 @@ class StatsRestController {
     public getAssignmentList(List<SubmitAssignment> submitAssignmentList){
         List<CreateAssignment> createAssignmentList = []
         submitAssignmentList.each {
-            def id = it.tempassignmentid.replace(it.email,'')
+            def id = it.tempassignmentid.replace('-'+it.email,'')
             createAssignmentList.add(createAssignmentRepository.findByAssignmentid(id))
         }
         createAssignmentList

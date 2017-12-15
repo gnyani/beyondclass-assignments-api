@@ -8,11 +8,9 @@ import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentR
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.UserRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
-import groovy.json.JsonSlurper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -43,7 +41,7 @@ class SubmitAssignmentRestController {
     public ResponseEntity<?> tempSaveAssignment(@RequestBody SubmitAssignment submitAssignment){
         def user = serviceUtilities.findUserByEmail(submitAssignment.email)
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(submitAssignment.tempassignmentid)
-        submitAssignment.setTempassignmentid(submitAssignment.tempassignmentid + submitAssignment.email)
+        submitAssignment.setTempassignmentid(serviceUtilities.generateFileName(submitAssignment.tempassignmentid,submitAssignment.email))
         String propicurl = user.normalpicUrl ?: user.googlepicUrl
         submitAssignment.setPropicurl(propicurl)
         submitAssignment.setStatus(AssignmentSubmissionStatus.PENDING_APPROVAL)

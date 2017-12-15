@@ -74,7 +74,7 @@ class ListAssignmentsRestController {
         ReturnSavedAssignment returnSavedAssignment = new ReturnSavedAssignment()
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
         returnSavedAssignment.setQuestions(assignment ?. getQuestions())
-        SaveAssignment saveAssignment = saveAssignmentRepository.findByTempassignmentid(assignmentId+email)
+        SaveAssignment saveAssignment = saveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId,email))
         returnSavedAssignment.setAnswers(saveAssignment ?. answers)
         if(saveAssignment ?.timespent != null)
         returnSavedAssignment.setTimespent(saveAssignment ?. timespent)
@@ -87,7 +87,7 @@ class ListAssignmentsRestController {
 
         AssignmentQuestionsAndAnswers assignmentQuestionsAndAnswers = new AssignmentQuestionsAndAnswers()
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentSubmissionDetails.assignmentid)
-        SubmitAssignment submitAssignment =  submitAssignmentRepository.findByTempassignmentid(assignmentSubmissionDetails.assignmentid+assignmentSubmissionDetails.email)
+        SubmitAssignment submitAssignment =  submitAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentSubmissionDetails.assignmentid,assignmentSubmissionDetails.email))
         assignmentQuestionsAndAnswers.setCreateAssignment(createAssignment)
         assignmentQuestionsAndAnswers.setSubmitAssignment(submitAssignment)
         assignmentQuestionsAndAnswers.setTimespent(formatDuration(submitAssignment.timespent))

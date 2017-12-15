@@ -38,7 +38,7 @@ class CreateAssignmentRestController {
         String startyear = splits[0]
         String section = splits[1]
         String endyear = Integer.parseInt(startyear)+ 4
-        String propicurl = user.normalpicUrl ?: user.googlepicUrl
+        String propicurl = user ?.normalpicUrl ?: user?.googlepicUrl
         createAssignment.setPropicurl(propicurl)
         String time = System.currentTimeMillis()
         createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
