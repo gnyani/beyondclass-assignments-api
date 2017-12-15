@@ -54,7 +54,7 @@ class CreateAssignment {
     @JsonProperty
     @NotEmpty
     @NotNull
-    String[] questions
+    Object[] questions
 
     HashSet<String> submittedstudents
 
