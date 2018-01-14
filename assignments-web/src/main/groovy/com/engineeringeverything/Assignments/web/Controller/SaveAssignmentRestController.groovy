@@ -1,7 +1,9 @@
 package com.engineeringeverything.Assignments.web.Controller
 
 import api.saveassignment.SaveAssignment
+import api.saveassignment.SaveProgrammingAssignment
 import com.engineeringeverything.Assignments.core.Repositories.SaveAssignmentRepository
+import com.engineeringeverything.Assignments.core.Repositories.SaveProgrammingAssignmentRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -21,6 +23,9 @@ class SaveAssignmentRestController {
     SaveAssignmentRepository saveAssignmentRepository
 
     @Autowired
+    SaveProgrammingAssignmentRepository saveProgrammingAssignmentRepository
+
+    @Autowired
     ServiceUtilities serviceUtilities
 
 
@@ -30,5 +35,13 @@ class SaveAssignmentRestController {
         saveAssignment.setTempassignmentid(serviceUtilities.generateFileName(saveAssignment.tempassignmentid,saveAssignment.email))
         SaveAssignment saveAssignment1 = saveAssignmentRepository.save(saveAssignment)
         saveAssignment1 ? new ResponseEntity<>("Saved Successfully", HttpStatus.OK) : new ResponseEntity<>("Something Went Wrong", HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    @ResponseBody
+    @PostMapping(value='/hackerrank/assignment/save')
+    public ResponseEntity<?> tempSaveProgrammingAssignment(@RequestBody SaveProgrammingAssignment saveProgrammingAssignment){
+        saveProgrammingAssignment.setTempassignmentid(serviceUtilities.generateFileName(saveProgrammingAssignment.tempassignmentid,saveProgrammingAssignment.email))
+        SaveProgrammingAssignment saveProgrammingAssignment1 = saveProgrammingAssignmentRepository.save(saveProgrammingAssignment)
+        saveProgrammingAssignment1 ? new ResponseEntity<>("Saved successfully",HttpStatus.OK) : new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR)
     }
 }

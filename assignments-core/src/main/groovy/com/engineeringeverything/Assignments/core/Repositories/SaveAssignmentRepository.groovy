@@ -8,5 +8,5 @@ import org.springframework.data.mongodb.repository.MongoRepository
  */
 interface SaveAssignmentRepository extends MongoRepository<SaveAssignment,String>{
 
-    SaveAssignment findByTempassignmentid(String email)
+    SaveAssignment findByTempassignmentid(String id)
 }

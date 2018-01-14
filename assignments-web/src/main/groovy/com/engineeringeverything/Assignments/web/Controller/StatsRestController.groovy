@@ -1,12 +1,14 @@
 package com.engineeringeverything.Assignments.web.Controller
 
 import api.createassignment.CreateAssignment
+import api.submitassignment.SubmitProgrammingAssignmentRequest
 import api.stats.StudentSubmissionStats
 import api.stats.TeacherAssignmentStats
 import api.submitassignment.AssignmentSubmissionStatus
 import api.submitassignment.SubmitAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
+
 import com.engineeringeverything.Assignments.core.Repositories.UserRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import org.springframework.beans.factory.annotation.Autowired
@@ -71,15 +73,30 @@ class StatsRestController {
     public ResponseEntity<?> getSubmissions(@RequestBody String email){
         StudentSubmissionStats studentSubmissionStats = new StudentSubmissionStats()
         def user = serviceUtilities.findUserByEmail(email)
-        studentSubmissionStats.setTotalPoints(user.points)
-       def myAssignments = submitAssignmentRepository.findByEmailOrderBySubmissionDateDesc(email)
-        studentSubmissionStats.setSubmitAssignmentList(myAssignments)
+        studentSubmissionStats.setTotalPoints(user?.points)
+        List<SubmitAssignment> myAssignments = submitAssignmentRepository.findByEmailOrderBySubmissionDateDesc(email)
+        int acceptedNumber = 0
+        int rejectedNumber = 0
+        int pendingNumber = 0
+
+        myAssignments.each {
+            if(it.status == AssignmentSubmissionStatus.ACCEPTED)
+                acceptedNumber++
+            else if(it.status == AssignmentSubmissionStatus.REJECTED)
+                rejectedNumber++
+            else
+                pendingNumber++
+        }
+
+        studentSubmissionStats.with{
+            totalSubmissionsCount = myAssignments.size()
+            acceptedCount = acceptedNumber
+            rejectedCount = rejectedNumber
+            pendingApprovalCount = pendingNumber
+            submitAssignmentList = myAssignments
+        }
         List<CreateAssignment> assignmentsList = getAssignmentList(myAssignments)
         studentSubmissionStats.setAssignmentsList(assignmentsList)
-        studentSubmissionStats.setTotalSubmissionsCount(submitAssignmentRepository.countByEmail(email))
-        studentSubmissionStats.setAcceptedCount(submitAssignmentRepository.countByEmailAndStatus(email,AssignmentSubmissionStatus.ACCEPTED))
-        studentSubmissionStats.setRejectedCount(submitAssignmentRepository.countByEmailAndStatus(email,AssignmentSubmissionStatus.REJECTED))
-        studentSubmissionStats.setPendingApprovalCount(submitAssignmentRepository.countByEmailAndStatus(email,AssignmentSubmissionStatus.PENDING_APPROVAL))
         new ResponseEntity<>(studentSubmissionStats,HttpStatus.OK)
     }
 

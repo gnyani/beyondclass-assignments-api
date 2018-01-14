@@ -6,11 +6,14 @@ import api.evaluateassignment.AssignmentQuestionsAndAnswers
 import api.evaluateassignment.AssignmentSubmissionDetails
 import api.saveassignment.ReturnSavedAssignment
 import api.saveassignment.SaveAssignment
+import api.saveassignment.SaveProgrammingAssignment
 import api.submitassignment.SubmitAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveAssignmentRepository
+import com.engineeringeverything.Assignments.core.Repositories.SaveProgrammingAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
+import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -34,6 +37,9 @@ class ListAssignmentsRestController {
 
     @Autowired
     SaveAssignmentRepository saveAssignmentRepository
+
+    @Autowired
+    SaveProgrammingAssignmentRepository saveProgrammingAssignmentRepository
 
     @Autowired
     CreateAssignmentRepository createAssignmentRepository
@@ -73,13 +79,27 @@ class ListAssignmentsRestController {
     public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId,@RequestBody String email){
         ReturnSavedAssignment returnSavedAssignment = new ReturnSavedAssignment()
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
-        returnSavedAssignment.setQuestions(assignment ?. getQuestions())
-        SaveAssignment saveAssignment = saveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId,email))
-        returnSavedAssignment.setAnswers(saveAssignment ?. answers)
-        if(saveAssignment ?.timespent != null)
-        returnSavedAssignment.setTimespent(saveAssignment ?. timespent)
-        assignment ? new ResponseEntity<>(returnSavedAssignment,HttpStatus.OK) : new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
+        returnSavedAssignment.setQuestions(assignment?.getQuestions())
+        returnSavedAssignment.setAssignmentType(assignment.assignmentType)
+
+        if(assignment.assignmentType == AssignmentType.THEORY) {
+            SaveAssignment saveAssignment = saveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
+            returnSavedAssignment.setAnswers(saveAssignment?.answers)
+            if (saveAssignment?.timespent != null)
+                returnSavedAssignment.setTimespent(saveAssignment?.timespent)
+            return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
+        }
+        else if(assignment.assignmentType == AssignmentType.CODING){
+
+            SaveProgrammingAssignment saveProgrammingAssignment = saveProgrammingAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId,email))
+            returnSavedAssignment.setSource(saveProgrammingAssignment ?. source)
+            returnSavedAssignment.setLanguage(saveProgrammingAssignment ?. language)
+            returnSavedAssignment.setTheme(saveProgrammingAssignment ?. theme)
+            return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
+        }
     }
+
+
 
     @ResponseBody
     @PostMapping(value = '/evaluate')
