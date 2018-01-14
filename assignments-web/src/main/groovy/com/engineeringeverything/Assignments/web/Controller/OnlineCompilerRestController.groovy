@@ -2,6 +2,15 @@ package com.engineeringeverything.Assignments.web.Controller
 
 
 import api.compiler.CompilerInput
+import api.createassignment.CodingAssignmentResponse
+import api.createassignment.CreateAssignment
+import api.submitassignment.SubmitAssignment
+import api.submitassignment.SubmitProgrammingAssignmentRequest
+import api.submitassignment.AssignmentSubmissionStatus
+import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
+import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
+import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
+import constants.CodingAssignmentStatus
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import org.apache.http.NameValuePair
@@ -12,6 +21,7 @@ import org.apache.http.impl.client.BasicResponseHandler
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicNameValuePair
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -30,6 +40,17 @@ class OnlineCompilerRestController {
 
     @Value('${hacker.rank.api.key}')
     String api_key
+
+    @Autowired
+    CreateAssignmentRepository createAssignmentRepository
+
+    @Autowired
+    ServiceUtilities serviceUtilities
+
+    @Autowired
+    SubmitAssignmentRepository submitAssignmentRepository
+
+    def slurper = new JsonSlurper()
 
     @ResponseBody
     @GetMapping(value = '/hackerrank/languages')
@@ -59,6 +80,144 @@ class OnlineCompilerRestController {
         System.out.println(responseString)
         client.close()
         responseString
+    }
+
+
+    @ResponseBody
+    @PostMapping(value='/hackerrank/assignment/submit')
+    public ResponseEntity<?> submitAssign(@RequestBody SubmitProgrammingAssignmentRequest programmingAssignment){
+
+        def user = serviceUtilities.findUserByEmail(programmingAssignment.email)
+        SubmitAssignment submitProgrammingAssignment = new SubmitAssignment()
+        CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(programmingAssignment.tempassignmentid)
+        CompilerInput compilerInput = new CompilerInput()
+
+        compilerInput.with {
+            source = programmingAssignment.source
+            lang = programmingAssignment.langcode
+            assignmentid = programmingAssignment.tempassignmentid
+        }
+        String[] source = new String[1]
+        source[0] = programmingAssignment.source
+        submitProgrammingAssignment.with {
+            mode = programmingAssignment.language
+            email = programmingAssignment.email
+            answers = source
+            propicurl =  user ?. normalpicUrl ?: user ?. googlepicUrl
+            status = AssignmentSubmissionStatus.PENDING_APPROVAL
+            tempassignmentid = serviceUtilities.generateFileName(programmingAssignment.tempassignmentid,programmingAssignment.email)
+            codingAssignmentResponse = submitAssignment(compilerInput)
+        }
+
+        def currentSubmittedStudents =  createAssignment.getSubmittedstudents()
+        def submittedDates = createAssignment.getSubmittedDates()
+        if(currentSubmittedStudents) {
+            currentSubmittedStudents.add(programmingAssignment.email)
+            submittedDates.put(programmingAssignment.email, new Date())
+        }
+        else
+        {
+            currentSubmittedStudents = new HashSet<String>()
+            currentSubmittedStudents.add(programmingAssignment.email)
+            submittedDates = new HashMap<String, Date>()
+            submittedDates.put(programmingAssignment.email,new Date())
+        }
+        createAssignment.setSubmittedstudents(currentSubmittedStudents)
+        createAssignment.setSubmittedDates(submittedDates)
+        CreateAssignment createAssignment1 = createAssignmentRepository.save(createAssignment)
+
+        SubmitAssignment submitProgrammingAssignment1 = submitAssignmentRepository.save(submitProgrammingAssignment)
+        submitProgrammingAssignment1 && createAssignment1 ? new ResponseEntity<>("Saved successfully",HttpStatus.OK) : new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    @ResponseBody
+    @PostMapping(value = '/hackerrank/assignment/compile')
+    public def submitAssignment(@RequestBody CompilerInput compilerInput){
+
+
+        def assignment = createAssignmentRepository.findByAssignmentid(compilerInput.assignmentid)
+        def testcases = assignment.inputs
+        def testcasesJson = JsonOutput.toJson(testcases)
+        def expected = assignment.outputs
+
+        HttpPost httpPost = new HttpPost("http://api.hackerrank.com/checker/submission.json");
+        CloseableHttpClient client = HttpClients.createDefault()
+        List<NameValuePair> params = new ArrayList<NameValuePair>()
+        params.add(new BasicNameValuePair("source", "${compilerInput.source}"))
+        params.add(new BasicNameValuePair("lang", "${compilerInput.lang}"))
+        params.add(new BasicNameValuePair("api_key","${api_key}"))
+        params.add(new BasicNameValuePair("testcases","${testcasesJson}"))
+        httpPost.setEntity(new UrlEncodedFormEntity(params));
+        CloseableHttpResponse response = client.execute(httpPost);
+        println("status is " + response.statusLine)
+        println("response is" + response.getEntity())
+        String responseString = new BasicResponseHandler().handleResponse(response)
+
+        def validation = validateAssignmentResult(expected,responseString)
+
+        def finalresponse = buildResponse(validation,responseString,expected)
+
+        client.close()
+
+        finalresponse
+
+    }
+
+    def validateAssignmentResult(def expected, def response){
+
+
+        def actualResponse = slurper.parseText(response)
+
+        println("response is "+ actualResponse.result)
+
+        def actual = actualResponse.result.stdout
+
+        println("actual is ${actual}")
+
+        println("expected is ${expected}")
+
+        actual == expected
+    }
+
+    def buildResponse(Boolean validation, def response, String[] expected){
+
+        CodingAssignmentResponse codingAssignmentResponse = new CodingAssignmentResponse()
+
+
+        if(validation){
+            codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.SUCCESS
+        }else{
+            def jsonResponse = slurper.parseText(response)
+            if(jsonResponse.result.compilemessage != '') {
+                codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.COMPILER_ERROR
+                codingAssignmentResponse.errorMessage = jsonResponse.result.compilemessage
+            }
+            else if(jsonResponse.result.message && jsonResponse.result.message[0] == "Runtime error"){
+                codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.RUNTIME_ERROR
+                codingAssignmentResponse.errorMessage = jsonResponse.result.stderr[0]
+            }else{
+                String[] actual = jsonResponse.result.stdout
+                int i = 0
+                def flag
+                 expected.each{
+                     if( actual[i] != it)
+                     {
+                         flag = true
+                         return
+                     }
+                     i++
+                 }
+                if(flag){
+                    codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.TESTS_FAILED
+                    codingAssignmentResponse.failedCase = i + 1
+                    codingAssignmentResponse.totalCount = expected.length
+                    codingAssignmentResponse.passCount = i > 0 ? i-1 : i
+                    codingAssignmentResponse.expected = expected[i]
+                    codingAssignmentResponse.actual = actual[i]
+                }
+            }
+        }
+        codingAssignmentResponse
     }
 
 }

@@ -11,6 +11,7 @@ import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -71,16 +72,33 @@ class SubmitAssignmentRestController {
 
         SubmitAssignment submitAssignment = submitAssignmentRepository.findByTempassignmentid(submissionid)
 
+        if(submitAssignment.status == AssignmentSubmissionStatus.ACCEPTED )
+        {
+            if(updateAssignmentStatus.status == AssignmentSubmissionStatus.REJECTED)
+            {
+                def user = serviceUtilities.findUserByEmail(submitAssignment.email)
+                user.setPoints(user.points - submitAssignment.marksGiven)
+                userRepository.save(user)
+            }else{
+                def user = serviceUtilities.findUserByEmail(submitAssignment.email)
+                if(user.points > 0)
+                user.setPoints(user.points - submitAssignment.marksGiven+updateAssignmentStatus.marks)
+                else
+                    user.setPoints(user.points+updateAssignmentStatus.marks)
+                userRepository.save(user)
+            }
+        }else {
+            if(updateAssignmentStatus.status == AssignmentSubmissionStatus.ACCEPTED) {
+                def user = serviceUtilities.findUserByEmail(submitAssignment.email)
+                user.setPoints(user.points + updateAssignmentStatus.marks)
+                userRepository.save(user)
+            }
+        }
         submitAssignment.setMarksGiven(updateAssignmentStatus.marks)
         submitAssignment.setStatus(updateAssignmentStatus.status)
-        def user = serviceUtilities.findUserByEmail(submitAssignment.email)
-        user.setPoints(user.points + submitAssignment.marksGiven)
-        userRepository.save(user)
 
         def submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
 
         submitAssignment1 ? new ResponseEntity<>('Success',HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
     }
-
-
 }

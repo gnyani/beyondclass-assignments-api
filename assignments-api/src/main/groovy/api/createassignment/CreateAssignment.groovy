@@ -1,6 +1,7 @@
 package api.createassignment
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import constants.AssignmentType
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import groovy.transform.TupleConstructor
@@ -34,8 +35,6 @@ class CreateAssignment {
     Date createDate = new Date()
 
     @JsonProperty
-    @NotEmpty
-    @NotNull
     String subject
 
     @JsonProperty
@@ -55,6 +54,17 @@ class CreateAssignment {
     @NotEmpty
     @NotNull
     Object[] questions
+
+    @JsonProperty
+    @NotEmpty
+    @NotNull
+    AssignmentType assignmentType
+
+    @JsonProperty
+    String[] inputs
+
+    @JsonProperty
+    String[] outputs
 
     HashSet<String> submittedstudents
 

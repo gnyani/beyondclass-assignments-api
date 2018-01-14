@@ -4,6 +4,7 @@ import api.createassignment.CreateAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Service.NotificationService
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
+import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -41,8 +42,16 @@ class CreateAssignmentRestController {
         String propicurl = user ?.normalpicUrl ?: user?.googlepicUrl
         createAssignment.setPropicurl(propicurl)
         String time = System.currentTimeMillis()
-        createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
+
+        if(createAssignment.assignmentType == AssignmentType.THEORY)
+
+            createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
                 section,startyear,endyear,createAssignment.email,createAssignment.subject,time))
+        else
+
+            createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
+                    section,startyear,endyear,createAssignment.email,time))
+
         def assignment = createAssignmentRepository.save(createAssignment)
         def message ="You got a new assignment from your teacher ${user.firstName.toUpperCase()}"
         notificationService.storeNotifications(user,message,"teacherstudentspace",createAssignment.batch)
