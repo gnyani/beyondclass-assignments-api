@@ -10,7 +10,6 @@ dependencies {
     compile(libs.springBootStarterDataMongodb)
     compile(libs.springBootStarterTest)
     compile(libs.springBootParent)
-    compile(libs.apachePoi)
     compile(libs.sendGrid)
     testCompile (libs.junit)
 }

@@ -1,10 +1,14 @@
 package com.engineeringeverything.Assignments.web.Controller
 
 import api.createassignment.CreateAssignment
+import api.user.User
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
+import com.engineeringeverything.Assignments.core.Repositories.UserRepository
+import com.engineeringeverything.Assignments.core.Service.EmailUtils
 import com.engineeringeverything.Assignments.core.Service.MailService
 import com.engineeringeverything.Assignments.core.Service.NotificationService
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
+import com.engineeringeverything.Assignments.core.constants.EmailTypes
 import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -32,6 +36,12 @@ class CreateAssignmentRestController {
 
     @Autowired
     NotificationService notificationService
+
+    @Autowired
+    EmailUtils emailUtils
+
+    @Autowired
+    UserRepository userRepository
 
     @Autowired
     MailService mailService
@@ -67,9 +77,13 @@ class CreateAssignmentRestController {
                     section,startyear,endyear,createAssignment.email,time))
 
         def assignment = createAssignmentRepository.save(createAssignment)
-        def message ="You got a new assignment from your teacher ${user.firstName.toUpperCase()}"
-        mailService.sendMail()
-        notificationService.storeNotifications(user,message,"teacherstudentspace",createAssignment.batch)
+        if(assignment) {
+            def message = "You got a new assignment from your teacher ${user.firstName.toUpperCase()}"
+            notificationService.storeNotifications(user, message, "teacherstudentspace", createAssignment.batch)
+            //sending email to the class
+            String uniqueClassId = serviceUtilities.generateFileName(user.university,user.college,user.branch,section,startyear,endyear)
+            findUsersAndSendEmail(uniqueClassId,EmailTypes.ASSIGNMENT,user.email)
+        }
         assignment ? new ResponseEntity<>("created successfully",HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
@@ -79,4 +93,19 @@ class CreateAssignmentRestController {
         def deleted = createAssignmentRepository.deleteByAssignmentid(filename)
         deleted ? new ResponseEntity<>('Successful',HttpStatus.OK) : new ResponseEntity<>('something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
     }
+
+    void findUsersAndSendEmail(String classId,EmailTypes emailTypes,String sender){
+        List<User> users = userRepository.findByUniqueclassid(classId)
+        def toEmails = []
+        users.each {
+            toEmails.add(it.email)
+        }
+        String[] emails = new String[toEmails.size()]
+        emails = toEmails.toArray(emails)
+        String htmlMessage = emailUtils.createEmailMessage(emailTypes,sender)
+        String subject = emailUtils.createSubject(emailTypes)
+
+        mailService.sendHtmlMail(emails,subject,htmlMessage)
+    }
+
 }
