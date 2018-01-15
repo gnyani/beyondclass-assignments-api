@@ -2,10 +2,12 @@ package com.engineeringeverything.Assignments.web.Controller
 
 import api.createassignment.CreateAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
+import com.engineeringeverything.Assignments.core.Service.MailService
 import com.engineeringeverything.Assignments.core.Service.NotificationService
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -31,6 +33,18 @@ class CreateAssignmentRestController {
     @Autowired
     NotificationService notificationService
 
+    @Autowired
+    MailService mailService
+
+//    @GetMapping("/mailService")
+//    public ResponseEntity<?> sendMail(){
+//        List<String> mail = new ArrayList<>();
+//        mail.add("gnyani007@gmail.com")
+//
+//        mailService.sendHtmlMail((String[])mail.toArray(),"helloworld","<h1>this is manoj</h1>");
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
+
     @ResponseBody
     @PostMapping(value = '/create')
     public ResponseEntity<?> createAssignment( @RequestBody CreateAssignment createAssignment){
@@ -54,6 +68,7 @@ class CreateAssignmentRestController {
 
         def assignment = createAssignmentRepository.save(createAssignment)
         def message ="You got a new assignment from your teacher ${user.firstName.toUpperCase()}"
+        mailService.sendMail()
         notificationService.storeNotifications(user,message,"teacherstudentspace",createAssignment.batch)
         assignment ? new ResponseEntity<>("created successfully",HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
