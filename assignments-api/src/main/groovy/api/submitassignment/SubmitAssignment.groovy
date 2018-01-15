@@ -3,6 +3,7 @@ package api.submitassignment
 import api.createassignment.CodingAssignmentResponse
 import api.insights.Insights
 import com.fasterxml.jackson.annotation.JsonProperty
+import constants.CodingAssignmentStatus
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.hibernate.validator.constraints.NotEmpty
@@ -80,9 +81,15 @@ class SubmitAssignment {
             stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(timespent)
                     .append(',').append(marksGiven).append(',').append(insights)
         }else{
-            stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(timespent)
-                    .append(',').append(marksGiven).append(',').append(codingAssignmentResponse.codingAssignmentStatus).append(',')
-            .append(codingAssignmentResponse.totalCount).append(',').append(codingAssignmentResponse.passCount)
+            if(codingAssignmentResponse.codingAssignmentStatus == CodingAssignmentStatus.TESTS_FAILED ) {
+                stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(timespent)
+                        .append(',').append(marksGiven).append(',').append(codingAssignmentResponse.codingAssignmentStatus).append(',')
+                        .append(codingAssignmentResponse.totalCount).append(',').append(codingAssignmentResponse.passCount)
+            }else{
+                stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(timespent)
+                        .append(',').append(marksGiven).append(',').append(codingAssignmentResponse.codingAssignmentStatus).append(',')
+                        .append('NA').append(',').append('NA')
+            }
         }
 
         stringBuilder
