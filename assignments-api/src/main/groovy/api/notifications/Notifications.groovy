@@ -26,7 +26,7 @@ public class Notifications {
 
     String notificationType;
 
-    @Indexed
+    @Indexed( expireAfterSeconds = 1205600)
     Date createdAt = new Date();
 
     @Indexed
