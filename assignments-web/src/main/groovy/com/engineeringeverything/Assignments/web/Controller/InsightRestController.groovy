@@ -52,41 +52,72 @@ class InsightRestController {
 
         List<SubmitAssignment> allassignments = submitAssignmentRepository.findByTempassignmentidStartingWithAndSubmissionDateLessThan(assignmentid,submitAssignment ?. submissionDate)
 
+        HashSet<SubmitAssignment> validAssignments = []
+
+        submitAssignment.questionIndex.each{ Object index ->
+            allassignments.each {
+                if(it.questionIndex.contains(index))
+                    validAssignments << it
+            }
+        }
+
         if(assignment.assignmentType == AssignmentType.THEORY)
-           return new ResponseEntity<>(computeInsights(allassignments, submitAssignment),HttpStatus.OK)
+           return new ResponseEntity<>(computeInsights(submitAssignment,validAssignments),HttpStatus.OK)
         return  new ResponseEntity<>("No insights for programming Assignment",HttpStatus.OK)
 
     }
 
-   public def computeInsights(List<SubmitAssignment> allassignments, SubmitAssignment submitAssignment ){
-       Insights insights = submitAssignment.insights
-      if(insights == null) {
+
+    public def computeInsights(SubmitAssignment submitAssignment,HashSet<SubmitAssignment> allassignments){
+        Insights insights = submitAssignment.insights
+        if(insights == null) {
           insights = new Insights()
 
           for (def i = 1; i < submitAssignment?.answers?.length + 1; i++) {
-              def maxMatch = 0
-              def maxIndex = 0
+              def maxMatch = 0.6
+              def matchedUsers = []
               NormalizedLevenshtein l = new NormalizedLevenshtein();
-              for(def j=0; j<allassignments.size();j++)
-              {
-                  def currentMatch = l.distance(submitAssignment?.answers[i - 1], allassignments[j]?.answers[i - 1])
-                  if (1-currentMatch > maxMatch) {
-                      maxMatch = 1 - currentMatch
-                      maxIndex = j
+              for (def j = 0; j < allassignments.size(); j++) {
+                  println("emails are ${allassignments[j].email}")
+
+                  def answerIndex = findAnswerToCompare(i - 1, submitAssignment.questionIndex, allassignments[j])
+                  if(answerIndex != -1) {
+                      def currentMatch = l.distance(submitAssignment?.answers[i - 1], allassignments[j]?.answers[answerIndex])
+                      if (1 - currentMatch > maxMatch) {
+                          matchedUsers << allassignments[j].email
+                      }
                   }
               }
-              if (maxMatch > 0.4) {
+              if (matchedUsers.size() > 0) {
                   if (insights.insight1 == null)
-                      insights.insight1 = "Answer ${i} matches ${Math.round(maxMatch * 100)}% with answer of ${allassignments[maxIndex].email}"
+                      insights.insight1 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${matchedUsers.toString()}"
                   else if (insights.insight2 == null)
-                      insights.insight2 = "Answer ${i} matches ${Math.round(maxMatch * 100)}% with answer of ${allassignments[maxIndex].email}"
-              }
+                      insights.insight2 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${matchedUsers.toString()}"
+                  else if (insights.insight3 == null)
+                      insights.insight3 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${matchedUsers.toString()}"
+                  else if (insights.insight4 == null)
+                      insights.insight4 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${matchedUsers.toString()}"
+                  else if (insights.insight5 == null)
+                      insights.insight5 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${matchedUsers.toString()}"
+                 }
           }
           submitAssignment.insights = insights
           submitAssignmentRepository.save(submitAssignment)
       }
-       insights
-   }
+        insights
+    }
+
+    int findAnswerToCompare(int index, List questionIndex , SubmitAssignment otherAssignment){
+
+        def questionNumber = questionIndex[index]
+
+        def answerIndex = otherAssignment.questionIndex.indexOf(questionNumber)
+
+        println("answer index is ${answerIndex}")
+
+        answerIndex
+    }
+
 
     @PostMapping(value = '/generate/excel/{assignmentid:.+}',produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<?> generateExcel(@PathVariable(value = "assignmentid" , required = true) String assignmentid,HttpServletResponse response){

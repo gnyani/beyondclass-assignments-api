@@ -11,11 +11,11 @@ class ReturnSavedAssignment {
 
     String[] answers
 
-    String source
+    String[] source
 
-    String language
+    String[] language
 
-    String theme
+    String[] theme
 
     long timespent
 

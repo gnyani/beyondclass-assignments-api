@@ -22,17 +22,22 @@ class SaveProgrammingAssignment {
     @JsonProperty
     @NotNull
     @NotEmpty
-    String language
+    String[] language
 
     @JsonProperty
     @NotNull
     @NotEmpty
-    String source
+    String[] source
 
     @JsonProperty
     @NotNull
     @NotEmpty
-    String theme
+    String[] theme
+
+    @JsonProperty
+    @NotNull
+    @NotEmpty
+    long timespent
 
     @JsonProperty
     @NotNull

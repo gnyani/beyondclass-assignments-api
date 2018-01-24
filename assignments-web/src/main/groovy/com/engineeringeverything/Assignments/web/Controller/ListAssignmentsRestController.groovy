@@ -79,8 +79,9 @@ class ListAssignmentsRestController {
     public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId,@RequestBody String email){
         ReturnSavedAssignment returnSavedAssignment = new ReturnSavedAssignment()
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
-        returnSavedAssignment.setQuestions(assignment?.getQuestions())
         returnSavedAssignment.setAssignmentType(assignment.assignmentType)
+        Object[] questions = genrateRandomQuestionsForStudent(assignment,email)
+        returnSavedAssignment.setQuestions(questions)
 
         if(assignment.assignmentType == AssignmentType.THEORY) {
             SaveAssignment saveAssignment = saveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
@@ -95,6 +96,8 @@ class ListAssignmentsRestController {
             returnSavedAssignment.setSource(saveProgrammingAssignment ?. source)
             returnSavedAssignment.setLanguage(saveProgrammingAssignment ?. language)
             returnSavedAssignment.setTheme(saveProgrammingAssignment ?. theme)
+            if(saveProgrammingAssignment?.timespent != null)
+                returnSavedAssignment.setTimespent(saveProgrammingAssignment ?. timespent)
             return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
         }
     }
@@ -106,12 +109,22 @@ class ListAssignmentsRestController {
     public ResponseEntity<?> fetchQuestionsAndAnswers(@RequestBody AssignmentSubmissionDetails assignmentSubmissionDetails ){
 
         AssignmentQuestionsAndAnswers assignmentQuestionsAndAnswers = new AssignmentQuestionsAndAnswers()
-        CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentSubmissionDetails.assignmentid)
-        SubmitAssignment submitAssignment =  submitAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentSubmissionDetails.assignmentid,assignmentSubmissionDetails.email))
-        assignmentQuestionsAndAnswers.setCreateAssignment(createAssignment)
-        assignmentQuestionsAndAnswers.setSubmitAssignment(submitAssignment)
-        assignmentQuestionsAndAnswers.setTimespent(formatDuration(submitAssignment.timespent))
-        createAssignment && submitAssignment ? new ResponseEntity<>(assignmentQuestionsAndAnswers,HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
+        CreateAssignment createAssignment1 = createAssignmentRepository.findByAssignmentid(assignmentSubmissionDetails.assignmentid)
+        SubmitAssignment submitAssignment1 =  submitAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentSubmissionDetails.assignmentid,assignmentSubmissionDetails.email))
+
+        def questions
+       if(createAssignment1.assignmentType == AssignmentType.THEORY)
+            questions = getQuestionsOfStudent(createAssignment1,assignmentSubmissionDetails.email)
+        else
+            questions = createAssignment1.questions
+
+        assignmentQuestionsAndAnswers.with {
+            createAssignment = createAssignment1
+            submitAssignment = submitAssignment1
+            timespent = formatDuration(submitAssignment1.timespent)
+            submittedQuestions = questions
+        }
+        createAssignment1 && submitAssignment1 ? new ResponseEntity<>(assignmentQuestionsAndAnswers,HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
 
     }
 
@@ -132,5 +145,57 @@ class ListAssignmentsRestController {
         b.append(seconds == 0L ? "00" : seconds < 10 ? String.valueOf("0" + seconds) :
                 String.valueOf(seconds));
         return b.toString();
+    }
+
+
+    Object[] genrateRandomQuestionsForStudent(CreateAssignment createAssignment,String email){
+
+        def questions = []
+
+        if(createAssignment.studentQuestionMapping ?. get(email) != null)
+        {
+            questions = getQuestionsOfStudent(createAssignment, email)
+        }
+        else {
+            def max = createAssignment.questions.size()
+            Random rand = new Random()
+
+            def randList = []
+
+            while(randList.size() < createAssignment.numberOfQuesPerStudent){
+                int randNum = rand.nextInt(max)
+                if(!randList.contains(randNum))
+                    randList << randNum
+            }
+
+            (0..createAssignment.numberOfQuesPerStudent-1).each {
+                int randNum = randList.get(it).toString().toInteger()
+                questions << createAssignment.questions[randNum]
+            }
+
+            if(createAssignment.studentQuestionMapping == null) {
+                def map = new HashMap()
+                map.put(email, randList)
+                createAssignment.setStudentQuestionMapping(map)
+            }else{
+                def map = createAssignment.studentQuestionMapping
+                map.put(email, randList)
+                createAssignment.setStudentQuestionMapping(map)
+            }
+
+            createAssignmentRepository.save(createAssignment)
+        }
+
+     questions
+    }
+
+    private Object[] getQuestionsOfStudent(CreateAssignment createAssignment, String email) {
+        def questionList = []
+        def randList = createAssignment.studentQuestionMapping.get(email)
+        (0..createAssignment.numberOfQuesPerStudent - 1).each {
+            int randNum = randList.get(it).toString().toInteger()
+            questionList << createAssignment.questions[randNum]
+        }
+        questionList
     }
 }

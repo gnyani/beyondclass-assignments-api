@@ -22,24 +22,27 @@ class SubmitProgrammingAssignmentRequest {
     @JsonProperty
     @NotNull
     @NotEmpty
-    String language
+    String[] language
 
     @JsonProperty
     @NotNull
     @NotEmpty
-    int langcode
+    int[] langcode
 
     @JsonProperty
     @NotNull
     @NotEmpty
-    String source
+    String[] source
+
+    @JsonProperty
+    @NotNull
+    @NotEmpty
+    long timespent
 
     @JsonProperty
     @NotNull
     @NotEmpty
     String email
-
-
 
 }
 

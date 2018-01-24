@@ -18,5 +18,7 @@ class AssignmentQuestionsAndAnswers {
 
     SubmitAssignment submitAssignment
 
+    Object[] submittedQuestions
+
     String timespent
 }

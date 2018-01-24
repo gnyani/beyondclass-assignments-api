@@ -90,23 +90,30 @@ class OnlineCompilerRestController {
         def user = serviceUtilities.findUserByEmail(programmingAssignment.email)
         SubmitAssignment submitProgrammingAssignment = new SubmitAssignment()
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(programmingAssignment.tempassignmentid)
-        CompilerInput compilerInput = new CompilerInput()
 
-        compilerInput.with {
-            source = programmingAssignment.source
-            lang = programmingAssignment.langcode
-            assignmentid = programmingAssignment.tempassignmentid
+        CodingAssignmentResponse[] responses = new CodingAssignmentResponse[programmingAssignment.source.size()]
+
+
+        for(int i=0;i< programmingAssignment.source.size();i++)
+        {
+            CompilerInput compilerInput = new CompilerInput()
+            compilerInput.with {
+                source = programmingAssignment.source[i]
+                lang = programmingAssignment.langcode[i]
+                assignmentid = programmingAssignment.tempassignmentid
+            }
+            responses[i] = submitAssignment(compilerInput)
         }
-        String[] source = new String[1]
-        source[0] = programmingAssignment.source
+
         submitProgrammingAssignment.with {
             mode = programmingAssignment.language
             email = programmingAssignment.email
-            answers = source
+            answers = programmingAssignment.source
+            timespent = programmingAssignment.timespent
             propicurl =  user ?. normalpicUrl ?: user ?. googlepicUrl
             status = AssignmentSubmissionStatus.PENDING_APPROVAL
+            codingAssignmentResponse = responses
             tempassignmentid = serviceUtilities.generateFileName(programmingAssignment.tempassignmentid,programmingAssignment.email)
-            codingAssignmentResponse = submitAssignment(compilerInput)
         }
 
         def currentSubmittedStudents =  createAssignment.getSubmittedstudents()
@@ -134,11 +141,13 @@ class OnlineCompilerRestController {
     @PostMapping(value = '/hackerrank/assignment/compile')
     public def submitAssignment(@RequestBody CompilerInput compilerInput){
 
+        println("Compiler input is ${compilerInput}")
+
 
         def assignment = createAssignmentRepository.findByAssignmentid(compilerInput.assignmentid)
-        def testcases = assignment.inputs
+        def testcases = assignment.inputs[compilerInput.questionNumber]
         def testcasesJson = JsonOutput.toJson(testcases)
-        def expected = assignment.outputs
+        def expected = assignment.outputs[compilerInput.questionNumber]
 
         HttpPost httpPost = new HttpPost("http://api.hackerrank.com/checker/submission.json");
         CloseableHttpClient client = HttpClients.createDefault()
@@ -155,6 +164,7 @@ class OnlineCompilerRestController {
 
         def validation = validateAssignmentResult(expected,responseString)
 
+        println("Building response with ${validation} and from Hr is ${responseString} and ${expected}")
         def finalresponse = buildResponse(validation,responseString,expected)
 
         client.close()

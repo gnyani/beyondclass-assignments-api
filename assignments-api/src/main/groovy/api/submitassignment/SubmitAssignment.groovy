@@ -44,9 +44,11 @@ class SubmitAssignment {
     @NotNull
     long timespent
 
-    CodingAssignmentResponse codingAssignmentResponse
+    CodingAssignmentResponse[] codingAssignmentResponse
 
-    String mode
+    List questionIndex
+
+    String[] mode
 
     String propicurl;
 
@@ -78,8 +80,8 @@ class SubmitAssignment {
         StringBuilder stringBuilder = new StringBuilder()
 
         if(insights) {
-            stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(timespent)
-                    .append(',').append(marksGiven).append(',').append(insights)
+            stringBuilder.append(email).append(',').append(status).append(',').append(marksGiven).append(',').append(submissionDate).append(',').append(timespent)
+                    .append(',').append(insights)
         }else{
             if(codingAssignmentResponse.codingAssignmentStatus == CodingAssignmentStatus.TESTS_FAILED ) {
                 stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(timespent)

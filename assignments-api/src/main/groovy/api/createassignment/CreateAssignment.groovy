@@ -48,6 +48,8 @@ class CreateAssignment {
     Date lastdate
 
     @JsonProperty
+    @NotEmpty
+    @NotNull
     String  message
 
     @JsonProperty
@@ -61,10 +63,17 @@ class CreateAssignment {
     AssignmentType assignmentType
 
     @JsonProperty
-    String[] inputs
+    @NotEmpty
+    @NotNull
+    int numberOfQuesPerStudent
 
     @JsonProperty
-    String[] outputs
+    List<String []> inputs
+
+    @JsonProperty
+    List<String []> outputs
+
+    HashMap<String,List> studentQuestionMapping
 
     HashSet<String> submittedstudents
 

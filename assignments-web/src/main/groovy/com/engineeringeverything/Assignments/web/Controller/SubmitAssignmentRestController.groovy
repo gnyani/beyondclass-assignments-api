@@ -45,6 +45,7 @@ class SubmitAssignmentRestController {
         submitAssignment.setTempassignmentid(serviceUtilities.generateFileName(submitAssignment.tempassignmentid,submitAssignment.email))
         String propicurl = user.normalpicUrl ?: user.googlepicUrl
         submitAssignment.setPropicurl(propicurl)
+        submitAssignment.setQuestionIndex(createAssignment.studentQuestionMapping.get(submitAssignment.email))
         submitAssignment.setStatus(AssignmentSubmissionStatus.PENDING_APPROVAL)
         SubmitAssignment submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
         def currentSubmittedStudents =  createAssignment.getSubmittedstudents()
