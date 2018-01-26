@@ -91,18 +91,20 @@ class OnlineCompilerRestController {
         SubmitAssignment submitProgrammingAssignment = new SubmitAssignment()
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(programmingAssignment.tempassignmentid)
 
-        CodingAssignmentResponse[] responses = new CodingAssignmentResponse[programmingAssignment.source.size()]
+        CodingAssignmentResponse[] responses = new CodingAssignmentResponse[programmingAssignment.questions.size()]
 
 
-        for(int i=0;i< programmingAssignment.source.size();i++)
+        for(int i=0;i< programmingAssignment.questions.size();i++)
         {
             CompilerInput compilerInput = new CompilerInput()
             compilerInput.with {
                 source = programmingAssignment.source[i]
                 lang = programmingAssignment.langcode[i]
+                question = programmingAssignment.questions[i]
                 assignmentid = programmingAssignment.tempassignmentid
             }
             responses[i] = submitAssignment(compilerInput)
+
         }
 
         submitProgrammingAssignment.with {
@@ -110,6 +112,7 @@ class OnlineCompilerRestController {
             email = programmingAssignment.email
             answers = programmingAssignment.source
             timespent = programmingAssignment.timespent
+            questionIndex = createAssignment.studentQuestionMapping.get(programmingAssignment.email)
             propicurl =  user ?. normalpicUrl ?: user ?. googlepicUrl
             status = AssignmentSubmissionStatus.PENDING_APPROVAL
             codingAssignmentResponse = responses
@@ -141,17 +144,13 @@ class OnlineCompilerRestController {
     @PostMapping(value = '/hackerrank/assignment/compile')
     public def submitAssignment(@RequestBody CompilerInput compilerInput){
 
-        println("Compiler input is ${compilerInput}")
-
-
         def assignment = createAssignmentRepository.findByAssignmentid(compilerInput.assignmentid)
         def questionNumber = assignment.questions.findIndexOf { it == compilerInput.question }
-
-        println("question number index is ${questionNumber}")
 
         def testcases = assignment.inputs[questionNumber]
         def testcasesJson = JsonOutput.toJson(testcases)
         def expected = assignment.outputs[questionNumber]
+        expected = expected.collect{it.trim()}
 
         HttpPost httpPost = new HttpPost("http://api.hackerrank.com/checker/submission.json");
         CloseableHttpClient client = HttpClients.createDefault()
@@ -186,6 +185,8 @@ class OnlineCompilerRestController {
 
         def actual = actualResponse.result.stdout
 
+        actual = actual.collect{it.trim()}
+
         println("actual is ${actual}")
 
         println("expected is ${expected}")
@@ -193,7 +194,7 @@ class OnlineCompilerRestController {
         actual == expected
     }
 
-    def buildResponse(Boolean validation, def response, String[] expected){
+    def buildResponse(Boolean validation, def response, def expected){
 
         CodingAssignmentResponse codingAssignmentResponse = new CodingAssignmentResponse()
 
@@ -224,7 +225,7 @@ class OnlineCompilerRestController {
                 if(flag){
                     codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.TESTS_FAILED
                     codingAssignmentResponse.failedCase = i + 1
-                    codingAssignmentResponse.totalCount = expected.length
+                    codingAssignmentResponse.totalCount = expected.size()
                     codingAssignmentResponse.passCount = i > 0 ? i-1 : i
                     codingAssignmentResponse.expected = expected[i]
                     codingAssignmentResponse.actual = actual[i]

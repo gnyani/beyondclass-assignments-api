@@ -1,6 +1,10 @@
 package com.engineeringeverything.Assignments.core.Service
 
+import api.createassignment.CreateAssignment
 import api.submitassignment.SubmitAssignment
+import com.engineeringeverything.Assignments.core.Repositories.UserRepository
+import constants.AssignmentType
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 /**
@@ -9,18 +13,23 @@ import org.springframework.stereotype.Service
 @Service
 class CsvGenerator {
 
-    public String toCsv(List<SubmitAssignment> list){
+    @Autowired
+    UserRepository userRepository
+
+    public String toCsv(List<SubmitAssignment> list,CreateAssignment createAssignment){
 
 
         StringBuilder stringBuilder = new StringBuilder()
 
-        if(list[0].insights) {
-            stringBuilder.append("Email,Status,SubmissionDate,TimeSpent,Marks Given,Insights").append("\n")
+        if(createAssignment.assignmentType == AssignmentType.THEORY) {
+            stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1,Insight2,Insight3,Insight4,Insight5").append("\n")
         }else{
-            stringBuilder.append("Email,Status,SubmissionDate,TimeSpent,Marks Given,AssignmentStatus,TotalTestCasesCount,TotalPassedCount").append("\n")
+            stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1,Insight2,Insight3,Insight4,Insight5,AssignmentStatus,TotalTestCasesCount,TotalPassedCount").append("\n")
         }
 
         list ?. each {
+            def user = userRepository.findByEmail(it.email)
+            stringBuilder.append(user.rollNumber).append(',')
             stringBuilder.append(it.toCsv()).append('\n')
         }
 

@@ -1,5 +1,6 @@
 package com.engineeringeverything.Assignments.web.Controller
 
+import api.createassignment.CreateAssignment
 import api.insights.Insights
 import api.submitassignment.SubmitAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
@@ -35,8 +36,6 @@ class InsightRestController {
     @Autowired
     CsvGenerator csvGenerator
 
-    @Autowired
-    ServiceUtilities serviceUtilities
 
 
 
@@ -76,7 +75,6 @@ class InsightRestController {
               def matchedUsers = []
               NormalizedLevenshtein l = new NormalizedLevenshtein();
               for (def j = 0; j < allassignments.size(); j++) {
-                  println("emails are ${allassignments[j].email}")
 
                   def answerIndex = findAnswerToCompare(i - 1, submitAssignment.questionIndex, allassignments[j])
                   if(answerIndex != -1) {
@@ -111,8 +109,6 @@ class InsightRestController {
 
         def answerIndex = otherAssignment.questionIndex.indexOf(questionNumber)
 
-        println("answer index is ${answerIndex}")
-
         answerIndex
     }
 
@@ -122,8 +118,9 @@ class InsightRestController {
 
 
         List<SubmitAssignment> submitAssignments = submitAssignmentRepository.findByTempassignmentidStartingWith(assignmentid)
+        CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
 
-        String csv = csvGenerator.toCsv(submitAssignments)
+        String csv = csvGenerator.toCsv(submitAssignments,assignment)
 
         byte[] csvBytes = csv.getBytes()
 

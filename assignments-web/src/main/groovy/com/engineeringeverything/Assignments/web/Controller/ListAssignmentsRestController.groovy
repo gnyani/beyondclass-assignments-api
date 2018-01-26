@@ -112,11 +112,8 @@ class ListAssignmentsRestController {
         CreateAssignment createAssignment1 = createAssignmentRepository.findByAssignmentid(assignmentSubmissionDetails.assignmentid)
         SubmitAssignment submitAssignment1 =  submitAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentSubmissionDetails.assignmentid,assignmentSubmissionDetails.email))
 
-        def questions
-       if(createAssignment1.assignmentType == AssignmentType.THEORY)
-            questions = getQuestionsOfStudent(createAssignment1,assignmentSubmissionDetails.email)
-        else
-            questions = createAssignment1.questions
+
+        def  questions = getQuestionsOfStudent(createAssignment1,assignmentSubmissionDetails.email)
 
         assignmentQuestionsAndAnswers.with {
             createAssignment = createAssignment1

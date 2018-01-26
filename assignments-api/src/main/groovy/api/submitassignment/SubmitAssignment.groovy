@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 
 import javax.validation.constraints.NotNull
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by GnyaniMac on 15/10/17.
@@ -79,21 +80,44 @@ class SubmitAssignment {
 
         StringBuilder stringBuilder = new StringBuilder()
 
-        if(insights) {
-            stringBuilder.append(email).append(',').append(status).append(',').append(marksGiven).append(',').append(submissionDate).append(',').append(timespent)
+        if(codingAssignmentResponse == null) {
+            stringBuilder.append(email).append(',').append(status).append(',').append(marksGiven).append(',').append(submissionDate).append(',').append(formatDuration(timespent))
                     .append(',').append(insights)
         }else{
-            if(codingAssignmentResponse.codingAssignmentStatus == CodingAssignmentStatus.TESTS_FAILED ) {
-                stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(timespent)
-                        .append(',').append(marksGiven).append(',').append(codingAssignmentResponse.codingAssignmentStatus).append(',')
-                        .append(codingAssignmentResponse.totalCount).append(',').append(codingAssignmentResponse.passCount)
-            }else{
-                stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(timespent)
-                        .append(',').append(marksGiven).append(',').append(codingAssignmentResponse.codingAssignmentStatus).append(',')
-                        .append('NA').append(',').append('NA')
+
+            stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(formatDuration(timespent))
+                    .append(',').append(marksGiven).append(',').append(insights)
+
+            codingAssignmentResponse.eachWithIndex { var , index ->
+                if (var.codingAssignmentStatus == CodingAssignmentStatus.TESTS_FAILED) {
+                          stringBuilder.append('\n').append(',,,,,,,,,,').append("Question ${index+1}").append(',').append(var.codingAssignmentStatus).append(',')
+                            .append(var.totalCount).append(',').append(var.passCount)
+                } else {
+                      stringBuilder.append('\n').append(',,,,,,,,,,').append("Question ${index+1}").append(',').append(var.codingAssignmentStatus).append(',')
+                            .append('NA').append(',').append('NA')
+                }
             }
         }
 
         stringBuilder
+    }
+
+    public static String formatDuration(final long millis) {
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis)
+        - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis));
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
+        - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis));
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+
+        StringBuilder b = new StringBuilder();
+        b.append(hours == 0L ? "00" : hours < 10 ? String.valueOf("0" + hours) :
+                String.valueOf(hours));
+        b.append(":");
+        b.append(minutes == 0L ? "00" : minutes < 10 ? String.valueOf("0" + minutes) :
+                String.valueOf(minutes));
+        b.append(":");
+        b.append(seconds == 0L ? "00" : seconds < 10 ? String.valueOf("0" + seconds) :
+                String.valueOf(seconds));
+        return b.toString();
     }
 }

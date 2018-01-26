@@ -27,6 +27,11 @@ class SubmitProgrammingAssignmentRequest {
     @JsonProperty
     @NotNull
     @NotEmpty
+    Object[] questions
+
+    @JsonProperty
+    @NotNull
+    @NotEmpty
     int[] langcode
 
     @JsonProperty
