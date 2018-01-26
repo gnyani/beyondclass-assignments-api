@@ -145,9 +145,13 @@ class OnlineCompilerRestController {
 
 
         def assignment = createAssignmentRepository.findByAssignmentid(compilerInput.assignmentid)
-        def testcases = assignment.inputs[compilerInput.questionNumber]
+        def questionNumber = assignment.questions.findIndexOf { it == compilerInput.question }
+
+        println("question number index is ${questionNumber}")
+
+        def testcases = assignment.inputs[questionNumber]
         def testcasesJson = JsonOutput.toJson(testcases)
-        def expected = assignment.outputs[compilerInput.questionNumber]
+        def expected = assignment.outputs[questionNumber]
 
         HttpPost httpPost = new HttpPost("http://api.hackerrank.com/checker/submission.json");
         CloseableHttpClient client = HttpClients.createDefault()

@@ -61,10 +61,8 @@ class InsightRestController {
             }
         }
 
-        if(assignment.assignmentType == AssignmentType.THEORY)
-           return new ResponseEntity<>(computeInsights(submitAssignment,validAssignments),HttpStatus.OK)
-        return  new ResponseEntity<>("No insights for programming Assignment",HttpStatus.OK)
 
+        return new ResponseEntity<>(computeInsights(submitAssignment,validAssignments),HttpStatus.OK)
     }
 
 

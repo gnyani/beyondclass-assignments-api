@@ -29,9 +29,10 @@ class CompilerInput {
     String testcases
 
     @JsonProperty
-    @NotNull
     @NotEmpty
-    int questionNumber
+    @NotNull
+    Object question
+
 
     @JsonProperty
     String assignmentid
