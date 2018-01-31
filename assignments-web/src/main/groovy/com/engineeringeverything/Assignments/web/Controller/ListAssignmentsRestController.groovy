@@ -77,28 +77,32 @@ class ListAssignmentsRestController {
     @ResponseBody
     @PostMapping(value = '/get/{assignmentId:.+}')
     public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId,@RequestBody String email){
-        ReturnSavedAssignment returnSavedAssignment = new ReturnSavedAssignment()
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
-        returnSavedAssignment.setAssignmentType(assignment.assignmentType)
-        Object[] questions = genrateRandomQuestionsForStudent(assignment,email)
-        returnSavedAssignment.setQuestions(questions)
+        Boolean valid = isValidSubmission(assignment,email)
+        if(valid) {
+            ReturnSavedAssignment returnSavedAssignment = new ReturnSavedAssignment()
+            returnSavedAssignment.setAssignmentType(assignment.assignmentType)
+            Object[] questions = genrateRandomQuestionsForStudent(assignment, email)
+            returnSavedAssignment.setQuestions(questions)
 
-        if(assignment.assignmentType == AssignmentType.THEORY) {
-            SaveAssignment saveAssignment = saveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
-            returnSavedAssignment.setAnswers(saveAssignment?.answers)
-            if (saveAssignment?.timespent != null)
-                returnSavedAssignment.setTimespent(saveAssignment?.timespent)
-            return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
-        }
-        else if(assignment.assignmentType == AssignmentType.CODING){
+            if (assignment.assignmentType == AssignmentType.THEORY) {
+                SaveAssignment saveAssignment = saveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
+                returnSavedAssignment.setAnswers(saveAssignment?.answers)
+                if (saveAssignment?.timespent != null)
+                    returnSavedAssignment.setTimespent(saveAssignment?.timespent)
+                return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
+            } else if (assignment.assignmentType == AssignmentType.CODING) {
 
-            SaveProgrammingAssignment saveProgrammingAssignment = saveProgrammingAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId,email))
-            returnSavedAssignment.setSource(saveProgrammingAssignment ?. source)
-            returnSavedAssignment.setLanguage(saveProgrammingAssignment ?. language)
-            returnSavedAssignment.setTheme(saveProgrammingAssignment ?. theme)
-            if(saveProgrammingAssignment?.timespent != null)
-                returnSavedAssignment.setTimespent(saveProgrammingAssignment ?. timespent)
-            return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
+                SaveProgrammingAssignment saveProgrammingAssignment = saveProgrammingAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
+                returnSavedAssignment.setSource(saveProgrammingAssignment?.source)
+                returnSavedAssignment.setLanguage(saveProgrammingAssignment?.language)
+                returnSavedAssignment.setTheme(saveProgrammingAssignment?.theme)
+                if (saveProgrammingAssignment?.timespent != null)
+                    returnSavedAssignment.setTimespent(saveProgrammingAssignment?.timespent)
+                return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
+            }
+        }  else{
+            return  new ResponseEntity<>("You might have already submitted the assignment",HttpStatus.FORBIDDEN)
         }
     }
 
@@ -194,5 +198,15 @@ class ListAssignmentsRestController {
             questionList << createAssignment.questions[randNum]
         }
         questionList
+    }
+
+    private Boolean isValidSubmission(CreateAssignment assignment, String email){
+        Boolean valid = true
+        Date currentDate = new Date()
+        println("current Date is ${currentDate} and lastdate is ${assignment.lastdate} and submitted assignment ${assignment?.submittedstudents?.contains(email)}")
+        if((currentDate > assignment.lastdate && currentDate.date != assignment.lastdate.date) || assignment?.submittedstudents?.contains(email)){
+             valid = false
+        }
+        valid
     }
 }
