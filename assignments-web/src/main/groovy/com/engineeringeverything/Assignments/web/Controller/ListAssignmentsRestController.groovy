@@ -23,8 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 
-import java.text.DateFormat
-import java.text.SimpleDateFormat
+
 import java.util.concurrent.TimeUnit
 
 /**
@@ -132,10 +131,11 @@ class ListAssignmentsRestController {
     }
 
     public static String formatDuration(long millis) {
-        long second = TimeUnit.MILLISECONDS.toSeconds(millis);
-        long minute = TimeUnit.MILLISECONDS.toMinutes(millis);
-        long hour = TimeUnit.MILLISECONDS.toHours(millis);
-        return String.format("%02d:%02d:%02d", hour, minute, second);
+        long second = (long)(millis / 1000) % 60
+        long minute = (long)(millis / (1000 * 60)) % 60
+        long hour = (long)(millis / (1000 * 60 * 60)) % 24
+
+        String.format("%02d:%02d:%02d", hour, minute, second)
     }
 
 

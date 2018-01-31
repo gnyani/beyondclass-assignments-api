@@ -103,9 +103,10 @@ class SubmitAssignment {
     }
 
     public static String formatDuration(long millis) {
-        long second = TimeUnit.MILLISECONDS.toSeconds(millis);
-        long minute = TimeUnit.MILLISECONDS.toMinutes(millis);
-        long hour = TimeUnit.MILLISECONDS.toHours(millis);
-        return String.format("%02d:%02d:%02d", hour, minute, second);
+        long second = (long)(millis / 1000) % 60
+        long minute = (long)(millis / (1000 * 60)) % 60
+        long hour = (long)(millis / (1000 * 60 * 60)) % 24
+
+        String.format("%02d:%02d:%02d", hour, minute, second)
     }
 }
