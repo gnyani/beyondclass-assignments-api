@@ -95,6 +95,8 @@ class CreateAssignmentRestController {
     }
 
     void findUsersAndSendEmail(String classId,EmailTypes emailTypes,String sender){
+
+
         List<User> users = userRepository.findByUniqueclassid(classId)
         def toEmails = []
         users.each {
@@ -106,6 +108,7 @@ class CreateAssignmentRestController {
         String subject = emailUtils.createSubject(emailTypes)
 
         mailService.sendHtmlMail(emails,subject,htmlMessage)
+
     }
 
 }

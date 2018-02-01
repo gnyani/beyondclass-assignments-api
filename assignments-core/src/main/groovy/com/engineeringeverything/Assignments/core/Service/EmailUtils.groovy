@@ -21,7 +21,7 @@ class EmailUtils {
 
             message = "<h3> You got a new ${type.toString()} from your teacher ${sender} </h3>" +
                     "<br />" +
-                    "<form action=\"http://${hostName}/${type.toString()}\">\n" +
+                    "<form action=\"http://${hostName}/#/teacherstudentspace\">\n" +
                     "    <input type=\"submit\" value=\"View ${type}\" />\n" +
                     "</form>" +
                     "<br />" +
@@ -31,7 +31,7 @@ class EmailUtils {
 
             message = "<h3> You got a new ${type.toString()} from your teacher ${sender} </h3>" +
                     "<br />" +
-                    "<form action=\"http://${hostName}/${type.toString()}\">\n" +
+                    "<form action=\"http://${hostName}/#/teacherstudentspace\">\n" +
                     "    <input type=\"submit\" value=\"view ${type}\" />\n" +
                     "</form>" +
                     "<br />" +
