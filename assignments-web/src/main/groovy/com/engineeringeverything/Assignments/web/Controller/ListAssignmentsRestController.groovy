@@ -194,7 +194,7 @@ class ListAssignmentsRestController {
         Boolean valid = true
         Date currentDate = new Date()
         println("current Date is ${currentDate} and lastdate is ${assignment.lastdate} and submitted assignment ${assignment?.submittedstudents?.contains(email)}")
-        if((currentDate > assignment.lastdate && currentDate.date != assignment.lastdate.date) || assignment?.submittedstudents?.contains(email)){
+        if((currentDate - 1 > assignment.lastdate && currentDate.date != assignment.lastdate.date) || assignment?.submittedstudents?.contains(email)){
              valid = false
         }
         valid
