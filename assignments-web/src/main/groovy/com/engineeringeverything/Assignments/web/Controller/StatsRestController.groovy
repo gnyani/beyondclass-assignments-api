@@ -48,7 +48,7 @@ class StatsRestController {
         teacherAssignmentStats.setSubmitAssignment(submitAssignment)
 
         teacherAssignmentStats.setTotalNumberOfDays(createAssignment.lastdate - createAssignment.createDate)
-        def numberofDaysLeft = createAssignment.lastdate - new Date()
+        def numberofDaysLeft = createAssignment.lastdate - (new Date() - 1)
         if(numberofDaysLeft>0)
         teacherAssignmentStats.setNumberOfDaysLeft(numberofDaysLeft)
         else
