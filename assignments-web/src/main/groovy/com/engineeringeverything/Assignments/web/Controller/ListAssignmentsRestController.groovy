@@ -71,7 +71,7 @@ class ListAssignmentsRestController {
 
         def user = serviceUtilities.findUserByEmail(email)
         def assignmentid = serviceUtilities.generateFileName(user.university,user.college,user.branch,user.section,user.startYear,user.endYear)
-        def list = createAssignmentRepository.findByAssignmentidStartingWithAndSubmittedstudentsNotContainingAndLastdateAfterOrderByLastdate(assignmentid,email,new Date()-1)
+        def list = createAssignmentRepository.findByAssignmentidStartingWithAndSubmittedstudentsNotContainingAndLastdateAfterOrderByLastdate(assignmentid,email,new Date())
         list ? new ResponseEntity<>(list,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
     }
 
@@ -194,7 +194,7 @@ class ListAssignmentsRestController {
         Boolean valid = true
         Date currentDate = new Date()
         println("current Date is ${currentDate} and lastdate is ${assignment.lastdate} and submitted assignment ${assignment?.submittedstudents?.contains(email)}")
-        if((currentDate - 1 > assignment.lastdate && currentDate.date != assignment.lastdate.date) || assignment?.submittedstudents?.contains(email)){
+        if((currentDate > assignment.lastdate && currentDate.date != assignment.lastdate.date) || assignment?.submittedstudents?.contains(email)){
              valid = false
         }
         valid
