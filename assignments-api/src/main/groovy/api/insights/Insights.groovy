@@ -20,6 +20,6 @@ class Insights {
 
     @Override
     public String toString() {
-        return "${insight1}" + ',' + "${insight2}" + ',' + "${insight3}" + ',' + "${insight4}" + ',' + "${insight5}"
+        return "+${insight1}+" + ',' + "+${insight2}+" + ',' + "+${insight3}+" + ',' + "+${insight4}+" + ',' + "+${insight5}+"
     }
 }
