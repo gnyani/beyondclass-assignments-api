@@ -78,7 +78,6 @@ class ListAssignmentsRestController {
     public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId,@RequestBody String email){
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
         Boolean valid = isValidSubmission(assignment,email)
-        println("came here")
         if(valid) {
             ReturnSavedAssignment returnSavedAssignment = new ReturnSavedAssignment()
             returnSavedAssignment.setAssignmentType(assignment.assignmentType)
