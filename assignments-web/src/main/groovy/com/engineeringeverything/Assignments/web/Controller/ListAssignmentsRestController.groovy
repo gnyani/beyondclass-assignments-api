@@ -24,8 +24,6 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 
 
-import java.util.concurrent.TimeUnit
-
 /**
  * Created by GnyaniMac on 02/10/17.
  */
@@ -71,7 +69,7 @@ class ListAssignmentsRestController {
 
         def user = serviceUtilities.findUserByEmail(email)
         def assignmentid = serviceUtilities.generateFileName(user.university,user.college,user.branch,user.section,user.startYear,user.endYear)
-        def list = createAssignmentRepository.findByAssignmentidStartingWithAndSubmittedstudentsNotContainingAndLastdateAfterOrderByLastdate(assignmentid,email,new Date())
+        def list = createAssignmentRepository.findByAssignmentidStartingWithAndSubmittedstudentsNotContainingAndLastdateAfterOrderByLastdate(assignmentid,email,new Date()-1)
         list ? new ResponseEntity<>(list,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
     }
 
@@ -80,6 +78,7 @@ class ListAssignmentsRestController {
     public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId,@RequestBody String email){
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
         Boolean valid = isValidSubmission(assignment,email)
+        println("came here")
         if(valid) {
             ReturnSavedAssignment returnSavedAssignment = new ReturnSavedAssignment()
             returnSavedAssignment.setAssignmentType(assignment.assignmentType)
@@ -93,7 +92,6 @@ class ListAssignmentsRestController {
                     returnSavedAssignment.setTimespent(saveAssignment?.timespent)
                 return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
             } else if (assignment.assignmentType == AssignmentType.CODING) {
-
                 SaveProgrammingAssignment saveProgrammingAssignment = saveProgrammingAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
                 returnSavedAssignment.setSource(saveProgrammingAssignment?.source)
                 returnSavedAssignment.setLanguage(saveProgrammingAssignment?.language)
@@ -193,8 +191,7 @@ class ListAssignmentsRestController {
     private Boolean isValidSubmission(CreateAssignment assignment, String email){
         Boolean valid = true
         Date currentDate = new Date()
-        println("current Date is ${currentDate} and lastdate is ${assignment.lastdate} and submitted assignment ${assignment?.submittedstudents?.contains(email)}")
-        if((currentDate > assignment.lastdate && currentDate.date != assignment.lastdate.date) || assignment?.submittedstudents?.contains(email)){
+        if((currentDate-1 > assignment.lastdate && currentDate.date != assignment.lastdate.date) || assignment?.submittedstudents?.contains(email)){
              valid = false
         }
         valid

@@ -103,8 +103,14 @@ class OnlineCompilerRestController {
                 question = programmingAssignment.questions[i]
                 assignmentid = programmingAssignment.tempassignmentid
             }
+            if(compilerInput.source.trim() != "")
             responses[i] = submitAssignment(compilerInput)
-
+            else{
+                CodingAssignmentResponse codingAssignmentResponse = new CodingAssignmentResponse()
+                codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.RUNTIME_ERROR
+                codingAssignmentResponse.errorMessage = 'Source Code cannot be empty'
+                responses[i] = codingAssignmentResponse
+            }
         }
 
         submitProgrammingAssignment.with {
@@ -144,35 +150,42 @@ class OnlineCompilerRestController {
     @PostMapping(value = '/hackerrank/assignment/compile')
     public def submitAssignment(@RequestBody CompilerInput compilerInput){
 
-        def assignment = createAssignmentRepository.findByAssignmentid(compilerInput.assignmentid)
-        def questionNumber = assignment.questions.findIndexOf { it == compilerInput.question }
 
-        def testcases = assignment.inputs[questionNumber]
-        def testcasesJson = JsonOutput.toJson(testcases)
-        def expected = assignment.outputs[questionNumber]
-        expected = expected.collect{it.trim()}
+        println("source is" + compilerInput.source.trim())
+        if(compilerInput.source.trim() != "") {
 
-        HttpPost httpPost = new HttpPost("http://api.hackerrank.com/checker/submission.json");
-        CloseableHttpClient client = HttpClients.createDefault()
-        List<NameValuePair> params = new ArrayList<NameValuePair>()
-        params.add(new BasicNameValuePair("source", "${compilerInput.source}"))
-        params.add(new BasicNameValuePair("lang", "${compilerInput.lang}"))
-        params.add(new BasicNameValuePair("api_key","${api_key}"))
-        params.add(new BasicNameValuePair("testcases","${testcasesJson}"))
-        httpPost.setEntity(new UrlEncodedFormEntity(params));
-        CloseableHttpResponse response = client.execute(httpPost);
-        println("status is " + response.statusLine)
-        println("response is" + response.getEntity())
-        String responseString = new BasicResponseHandler().handleResponse(response)
+            def assignment = createAssignmentRepository.findByAssignmentid(compilerInput.assignmentid)
+            def questionNumber = assignment.questions.findIndexOf { it == compilerInput.question }
 
-        def validation = validateAssignmentResult(expected,responseString)
+            def testcases = assignment.inputs[questionNumber]
+            def testcasesJson = JsonOutput.toJson(testcases)
+            def expected = assignment.outputs[questionNumber]
+            expected = expected.collect { it.trim() }
 
-        println("Building response with ${validation} and from Hr is ${responseString} and ${expected}")
-        def finalresponse = buildResponse(validation,responseString,expected)
+            HttpPost httpPost = new HttpPost("http://api.hackerrank.com/checker/submission.json");
+            CloseableHttpClient client = HttpClients.createDefault()
+            List<NameValuePair> params = new ArrayList<NameValuePair>()
+            params.add(new BasicNameValuePair("source", "${compilerInput.source}"))
+            params.add(new BasicNameValuePair("lang", "${compilerInput.lang}"))
+            params.add(new BasicNameValuePair("api_key", "${api_key}"))
+            params.add(new BasicNameValuePair("testcases", "${testcasesJson}"))
+            httpPost.setEntity(new UrlEncodedFormEntity(params));
+            CloseableHttpResponse response = client.execute(httpPost);
+            println("status is " + response.statusLine)
+            println("response is" + response.getEntity())
+            String responseString = new BasicResponseHandler().handleResponse(response)
 
-        client.close()
+            def validation = validateAssignmentResult(expected, responseString)
 
-        finalresponse
+            println("Building response with ${validation} and from Hr is ${responseString} and ${expected}")
+            def finalresponse = buildResponse(validation, responseString, expected)
+
+            client.close()
+
+            finalresponse
+        }else{
+            new ResponseEntity<>("source cant be empty",HttpStatus.BAD_REQUEST)
+        }
 
     }
 

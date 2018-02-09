@@ -47,8 +47,8 @@ class StatsRestController {
         def submitAssignment = submitAssignmentRepository.findByTempassignmentidStartingWith(assignmentId)
         teacherAssignmentStats.setSubmitAssignment(submitAssignment)
 
-        teacherAssignmentStats.setTotalNumberOfDays(createAssignment.lastdate - createAssignment.createDate)
-        def numberofDaysLeft = createAssignment.lastdate - (new Date() - 1)
+        teacherAssignmentStats.setTotalNumberOfDays(createAssignment.lastdate+1 - createAssignment.createDate)
+        def numberofDaysLeft = createAssignment.lastdate - (new Date()-1)
         if(numberofDaysLeft>0)
         teacherAssignmentStats.setNumberOfDaysLeft(numberofDaysLeft)
         else
@@ -56,6 +56,7 @@ class StatsRestController {
 
         teacherAssignmentStats.setNumberOfStudentsSubmitted(submitAssignmentRepository.countByTempassignmentidStartingWith(assignmentId))
         int endindexofUniqueClassId = ordinalIndexOf(assignmentId,'-',6)
+
         teacherAssignmentStats.setTotalEligibleNumberOfStudents(userRepository.countByUniqueclassid(assignmentId.substring(0,endindexofUniqueClassId)))
 
         teacherAssignmentStats.setPercentdaysCompleted(calculatePerncentage(teacherAssignmentStats.totalNumberOfDays - teacherAssignmentStats.numberOfDaysLeft,teacherAssignmentStats.totalNumberOfDays))
