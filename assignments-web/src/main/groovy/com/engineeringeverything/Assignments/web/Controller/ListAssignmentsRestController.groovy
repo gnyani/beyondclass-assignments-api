@@ -10,6 +10,7 @@ import api.saveassignment.SaveProgrammingAssignment
 import api.submitassignment.SubmitAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveAssignmentRepository
+import com.engineeringeverything.Assignments.core.Repositories.SaveCreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveProgrammingAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
@@ -46,6 +47,9 @@ class ListAssignmentsRestController {
     @Autowired
     SubmitAssignmentRepository submitAssignmentRepository
 
+    @Autowired
+    SaveCreateAssignmentRepository saveCreateAssignmentRepository
+
     @ResponseBody
     @PostMapping(value = '/teacher/list')
     public ResponseEntity<?> listAssignments (@RequestBody TeacherAssignmentList teacherAssignmentList){
@@ -60,6 +64,19 @@ class ListAssignmentsRestController {
 
         def list = createAssignmentRepository.findByAssignmentidStartingWithOrderByCreateDateDesc(assignmentid)
 
+        list ? new ResponseEntity<>(list,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
+    }
+
+    @ResponseBody
+    @PostMapping(value = '/teacher/saved/list')
+    public ResponseEntity<?> listSavedAssignments (@RequestBody TeacherAssignmentList teacherAssignmentList){
+        def splits = teacherAssignmentList.batch.split('-')
+        String startyear = splits[0]
+        String section = splits[1]
+        String endyear = Integer.parseInt(startyear)+ 4
+        def user = serviceUtilities.findUserByEmail(teacherAssignmentList.email)
+        def assignmentid = serviceUtilities.generateFileName(user.university,user.college,user.branch,section,startyear,endyear,teacherAssignmentList.email)
+        def list = saveCreateAssignmentRepository.findByAssignmentidStartingWithOrderByCreateDateDesc(assignmentid)
         list ? new ResponseEntity<>(list,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
     }
 
