@@ -7,10 +7,14 @@ import api.submitassignment.UpdateAssignmentStatus
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.UserRepository
+import com.engineeringeverything.Assignments.core.Service.EmailUtils
+import com.engineeringeverything.Assignments.core.Service.MailService
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
+import com.engineeringeverything.Assignments.core.constants.EmailTypes
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.oauth2.provider.OAuth2Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -35,6 +39,12 @@ class SubmitAssignmentRestController {
 
     @Autowired
     ServiceUtilities serviceUtilities
+
+    @Autowired
+    MailService mailService
+
+    @Autowired
+    EmailUtils emailUtils
 
 
     @ResponseBody
@@ -73,15 +83,19 @@ class SubmitAssignmentRestController {
 
         SubmitAssignment submitAssignment = submitAssignmentRepository.findByTempassignmentid(submissionid)
 
+        String[] idsplit = submissionid.tokenize('-')
+
+        String teacheremail = idsplit[6]
+        println("mail is ${teacheremail}")
+
+        def user = serviceUtilities.findUserByEmail(submitAssignment.email)
         if(submitAssignment.status == AssignmentSubmissionStatus.ACCEPTED )
         {
             if(updateAssignmentStatus.status == AssignmentSubmissionStatus.REJECTED)
             {
-                def user = serviceUtilities.findUserByEmail(submitAssignment.email)
                 user.setPoints(user.points - submitAssignment.marksGiven)
                 userRepository.save(user)
             }else{
-                def user = serviceUtilities.findUserByEmail(submitAssignment.email)
                 if(user.points > 0)
                 user.setPoints(user.points - submitAssignment.marksGiven+updateAssignmentStatus.marks)
                 else
@@ -90,7 +104,6 @@ class SubmitAssignmentRestController {
             }
         }else {
             if(updateAssignmentStatus.status == AssignmentSubmissionStatus.ACCEPTED) {
-                def user = serviceUtilities.findUserByEmail(submitAssignment.email)
                 user.setPoints(user.points + updateAssignmentStatus.marks)
                 userRepository.save(user)
             }
@@ -99,7 +112,14 @@ class SubmitAssignmentRestController {
         submitAssignment.setStatus(updateAssignmentStatus.status)
 
         def submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
+        if(submitAssignment1){
 
+            String[] emails = [user.email]
+            String htmlMessage = emailUtils.createEmailMessage(EmailTypes.EVALUATION_DONE,teacheremail)
+            String subject = emailUtils.createSubject(EmailTypes.EVALUATION_DONE)
+
+            mailService.sendHtmlMail(emails,subject,htmlMessage)
+        }
         submitAssignment1 ? new ResponseEntity<>('Success',HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
     }
 }

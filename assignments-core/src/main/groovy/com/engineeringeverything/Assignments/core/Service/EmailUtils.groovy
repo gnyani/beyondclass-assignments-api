@@ -37,6 +37,15 @@ class EmailUtils {
                     "<br />" +
                     "<h4>          --Team Beyond Class"
 
+        }else if(type == EmailTypes.EVALUATION_DONE){
+
+            message = "<h3> Your assignment has been evaluated by your teacher ${sender} </h3>" +
+                    "<br />" +
+                    "<form action=\"http://${hostName}/#/submissions\">\n" +
+                    "    <input type=\"submit\" value=\"view result\" />\n" +
+                    "</form>" +
+                    "<br />" +
+                    "<h4>          --Team Beyond Class"
         }
         return message
     }
@@ -48,6 +57,8 @@ class EmailUtils {
             subject = "You got a new Assignment"
         else if(type == EmailTypes.ANNOUNCEMENT)
             subject = "You got a new Announcement"
+        else if(type == EmailTypes.EVALUATION_DONE)
+            subject = "Your Assignment has been evaluated"
 
         return subject
     }
