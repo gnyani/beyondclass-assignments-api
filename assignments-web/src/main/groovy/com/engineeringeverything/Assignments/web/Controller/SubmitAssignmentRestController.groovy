@@ -86,7 +86,6 @@ class SubmitAssignmentRestController {
         String[] idsplit = submissionid.tokenize('-')
 
         String teacheremail = idsplit[6]
-        println("mail is ${teacheremail}")
 
         def user = serviceUtilities.findUserByEmail(submitAssignment.email)
         if(submitAssignment.status == AssignmentSubmissionStatus.ACCEPTED )

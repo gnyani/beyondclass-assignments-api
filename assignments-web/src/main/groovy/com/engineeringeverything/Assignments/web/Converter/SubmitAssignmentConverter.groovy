@@ -20,6 +20,7 @@ class SubmitAssignmentConverter {
         response.propicurl = submitAssignment.propicurl
         response.submissionDate = submitAssignment.submissionDate
         response.status = submitAssignment.status
+        response.marksGiven = submitAssignment.marksGiven
         response
     }
 }

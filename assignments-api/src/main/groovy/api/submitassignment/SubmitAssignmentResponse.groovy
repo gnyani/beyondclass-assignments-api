@@ -15,4 +15,6 @@ class SubmitAssignmentResponse {
     String propicurl
 
     String email
+
+    double marksGiven
 }

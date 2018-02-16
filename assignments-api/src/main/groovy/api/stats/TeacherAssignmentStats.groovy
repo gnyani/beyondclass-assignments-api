@@ -1,6 +1,5 @@
 package api.stats
 
-import api.createassignment.CreateAssignment
 import api.submitassignment.SubmitAssignmentResponse
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
@@ -13,8 +12,6 @@ import groovy.transform.ToString
 @EqualsAndHashCode
 
 class TeacherAssignmentStats {
-
-    CreateAssignment createAssignment;
 
     List<SubmitAssignmentResponse> submitAssignment;
 
