@@ -11,10 +11,11 @@ import org.springframework.stereotype.Component
 @Component
 class SubmitAssignmentConverter {
 
-    SubmitAssignmentResponse response = new SubmitAssignmentResponse()
+
 
     SubmitAssignmentResponse convertToSubmitAssignmentResponse(SubmitAssignment submitAssignment){
 
+        SubmitAssignmentResponse response = new SubmitAssignmentResponse()
         response.email = submitAssignment.email
         response.propicurl = submitAssignment.propicurl
         response.submissionDate = submitAssignment.submissionDate

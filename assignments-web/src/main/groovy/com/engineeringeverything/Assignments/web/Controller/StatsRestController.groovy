@@ -52,8 +52,9 @@ class StatsRestController {
         def submittedAssignments = submitAssignmentRepository.findByTempassignmentidStartingWith(assignmentId)
         def submitedAssignmentsResponse = []
         submittedAssignments.each {
-            submitedAssignmentsResponse << submitAssignmentConverter.convertToSubmitAssignmentResponse(it)
+            submitedAssignmentsResponse.add(submitAssignmentConverter.convertToSubmitAssignmentResponse(it))
         }
+
         teacherAssignmentStats.setSubmitAssignment(submitedAssignmentsResponse)
 
         teacherAssignmentStats.setTotalNumberOfDays(createAssignment.lastdate+1 - createAssignment.createDate)

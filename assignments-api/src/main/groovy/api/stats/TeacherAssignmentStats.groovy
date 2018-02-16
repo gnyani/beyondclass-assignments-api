@@ -1,7 +1,7 @@
 package api.stats
 
 import api.createassignment.CreateAssignment
-import api.submitassignment.SubmitAssignment
+import api.submitassignment.SubmitAssignmentResponse
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
@@ -16,7 +16,7 @@ class TeacherAssignmentStats {
 
     CreateAssignment createAssignment;
 
-    List<SubmitAssignment> submitAssignment;
+    List<SubmitAssignmentResponse> submitAssignment;
 
     int numberOfDaysLeft;
 
