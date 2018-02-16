@@ -48,7 +48,7 @@ class StatsRestController {
 
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
 
-        def submittedAssignments = submitAssignmentRepository.findByTempassignmentidStartingWith(assignmentId)
+        def submittedAssignments = submitAssignmentRepository.findByTempassignmentidStartingWithOrderByMarksGiven(assignmentId)
         def submitedAssignmentsResponse = []
         submittedAssignments.each {
             submitedAssignmentsResponse.add(submitAssignmentConverter.convertToSubmitAssignmentResponse(it))

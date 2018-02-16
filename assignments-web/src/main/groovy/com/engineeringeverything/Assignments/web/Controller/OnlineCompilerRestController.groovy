@@ -62,7 +62,7 @@ class OnlineCompilerRestController {
     @ResponseBody
     @PostMapping(value = '/hackerrank/submit')
     public def submitCode(@RequestBody CompilerInput compilerInput) {
-        def testcases = compilerInput.testcases.split(" |\\n")
+        def testcases = [compilerInput.testcases.toString()]
         def testcasesJson = JsonOutput.toJson(testcases)
         println(compilerInput.toString())
         HttpPost httpPost = new HttpPost("http://api.hackerrank.com/checker/submission.json");
@@ -150,8 +150,6 @@ class OnlineCompilerRestController {
     @PostMapping(value = '/hackerrank/assignment/compile')
     public def submitAssignment(@RequestBody CompilerInput compilerInput){
 
-
-        println("source is" + compilerInput.source.trim())
         if(compilerInput.source.trim() != "") {
 
             def assignment = createAssignmentRepository.findByAssignmentid(compilerInput.assignmentid)

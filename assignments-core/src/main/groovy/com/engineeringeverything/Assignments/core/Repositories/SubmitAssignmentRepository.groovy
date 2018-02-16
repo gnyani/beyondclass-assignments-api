@@ -11,6 +11,8 @@ interface SubmitAssignmentRepository extends MongoRepository<SubmitAssignment,St
 
     List<SubmitAssignment> findByTempassignmentidStartingWith(String id)
 
+    List<SubmitAssignment> findByTempassignmentidStartingWithOrderByMarksGiven(String id)
+
     List<SubmitAssignment> findByTempassignmentidStartingWithAndSubmissionDateLessThan(String id, Date date)
 
     SubmitAssignment findByTempassignmentid(String id)
