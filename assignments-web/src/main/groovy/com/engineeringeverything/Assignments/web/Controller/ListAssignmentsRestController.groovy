@@ -14,6 +14,7 @@ import com.engineeringeverything.Assignments.core.Repositories.SaveCreateAssignm
 import com.engineeringeverything.Assignments.core.Repositories.SaveProgrammingAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
+import com.engineeringeverything.Assignments.web.Converter.CreateAssignmentConverter
 import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -49,6 +50,9 @@ class ListAssignmentsRestController {
 
     @Autowired
     SaveCreateAssignmentRepository saveCreateAssignmentRepository
+
+    @Autowired
+    CreateAssignmentConverter createAssignmentConverter
 
     @ResponseBody
     @PostMapping(value = '/teacher/list')
@@ -135,7 +139,7 @@ class ListAssignmentsRestController {
         def  questions = getQuestionsOfStudent(createAssignment1,assignmentSubmissionDetails.email)
 
         assignmentQuestionsAndAnswers.with {
-            createAssignment = createAssignment1
+            createAssignment = createAssignmentConverter.convertToCreateAssignmentResponse(createAssignment1)
             submitAssignment = submitAssignment1
             timespent = formatDuration(submitAssignment1.timespent)
             submittedQuestions = questions

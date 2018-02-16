@@ -1,6 +1,6 @@
 package api.evaluateassignment
 
-import api.createassignment.CreateAssignment
+import api.createassignment.CreateAssignmentResponse
 import api.submitassignment.SubmitAssignment
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
@@ -14,7 +14,7 @@ import groovy.transform.TupleConstructor
 @TupleConstructor
 class AssignmentQuestionsAndAnswers {
 
-    CreateAssignment createAssignment
+    CreateAssignmentResponse createAssignment
 
     SubmitAssignment submitAssignment
 
