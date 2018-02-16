@@ -1,6 +1,7 @@
 package com.engineeringeverything.Assignments.web.Controller
 
 import api.createassignment.CreateAssignment
+import api.submitassignment.SubmitAssignmentResponse
 import api.submitassignment.SubmitProgrammingAssignmentRequest
 import api.stats.StudentSubmissionStats
 import api.stats.TeacherAssignmentStats
@@ -11,6 +12,7 @@ import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentR
 
 import com.engineeringeverything.Assignments.core.Repositories.UserRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
+import com.engineeringeverything.Assignments.web.Converter.SubmitAssignmentConverter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -36,6 +38,9 @@ class StatsRestController {
     @Autowired
     ServiceUtilities serviceUtilities
 
+    @Autowired
+    SubmitAssignmentConverter submitAssignmentConverter
+
     @PostMapping(value = '/teacher/stats')
     public ResponseEntity<?> getStatsForAssignment(@RequestBody String assignmentId){
 
@@ -44,8 +49,12 @@ class StatsRestController {
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
         teacherAssignmentStats.setCreateAssignment(createAssignment)
 
-        def submitAssignment = submitAssignmentRepository.findByTempassignmentidStartingWith(assignmentId)
-        teacherAssignmentStats.setSubmitAssignment(submitAssignment)
+        def submittedAssignments = submitAssignmentRepository.findByTempassignmentidStartingWith(assignmentId)
+        def submitedAssignmentsResponse = []
+        submittedAssignments.each {
+            submitedAssignmentsResponse << submitAssignmentConverter.convertToSubmitAssignmentResponse(it)
+        }
+        teacherAssignmentStats.setSubmitAssignment(submitedAssignmentsResponse)
 
         teacherAssignmentStats.setTotalNumberOfDays(createAssignment.lastdate+1 - createAssignment.createDate)
         def numberofDaysLeft = createAssignment.lastdate - (new Date()-1)
