@@ -147,7 +147,7 @@ class ListAssignmentsRestController {
             submitAssignment = submitAssignment1
             timespent = formatDuration(submitAssignment1.timespent)
             submittedQuestions = questions
-            userName = user ?. firstName ?. capitalize() + user ?. lastName ?. capitalize()
+            userName = user ?. firstName ?. capitalize() +' '+user ?. lastName ?. capitalize()
             rollNumber = user.rollNumber
         }
         createAssignment1 && submitAssignment1 ? new ResponseEntity<>(assignmentQuestionsAndAnswers,HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
