@@ -86,9 +86,11 @@ class SubmitAssignmentRestController {
 
         String teacheremail = idsplit[6]
 
+        Boolean sendEmail = true
+
         def user = serviceUtilities.findUserByEmail(submitAssignment.email)
         if(submitAssignment.status == AssignmentSubmissionStatus.ACCEPTED )
-        {
+        {   sendEmail = false
             if(updateAssignmentStatus.status == AssignmentSubmissionStatus.REJECTED)
             {
                 user.setPoints(user.points - submitAssignment.marksGiven)
@@ -101,6 +103,8 @@ class SubmitAssignmentRestController {
                 userRepository.save(user)
             }
         }else {
+            if(submitAssignment.status == AssignmentSubmissionStatus.REJECTED)
+                sendEmail = false
             if(updateAssignmentStatus.status == AssignmentSubmissionStatus.ACCEPTED) {
                 user.setPoints(user.points + updateAssignmentStatus.marks)
                 userRepository.save(user)
@@ -111,13 +115,16 @@ class SubmitAssignmentRestController {
 
         def submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
         if(submitAssignment1){
-
-            task {
-                String[] emails = [user.email]
-                String htmlMessage = emailUtils.createEmailMessage(EmailTypes.EVALUATION_DONE, teacheremail)
-                String subject = emailUtils.createSubject(EmailTypes.EVALUATION_DONE)
-                mailService.sendHtmlMail(emails, subject, htmlMessage)
-            }.then {println("Sending mail task done to user ${user.email}")}
+           if(sendEmail) {
+               task {
+                   String[] emails = [user.email]
+                   String htmlMessage = emailUtils.createEmailMessage(EmailTypes.EVALUATION_DONE, teacheremail)
+                   String subject = emailUtils.createSubject(EmailTypes.EVALUATION_DONE)
+                   mailService.sendHtmlMail(emails, subject, htmlMessage)
+               }.then { println("Sending mail task done to user ${user.email}") }
+           }else{
+               println("not required to send email")
+           }
         }
         submitAssignment1 ? new ResponseEntity<>('Success',HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
     }
