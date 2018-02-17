@@ -13,7 +13,7 @@ import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import com.engineeringeverything.Assignments.core.constants.EmailTypes
 import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import static groovyx.gpars.dataflow.Dataflow.task
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -100,7 +100,7 @@ class CreateAssignmentRestController {
             notificationService.storeNotifications(user, message, "teacherstudentspace", createAssignment.batch)
             //sending email to the class
             String uniqueClassId = serviceUtilities.generateFileName(user.university,user.college,user.branch,section,startyear,endyear)
-            findUsersAndSendEmail(uniqueClassId,EmailTypes.ASSIGNMENT,user.email)
+            findUsersAndSendEmail(uniqueClassId,EmailTypes.ASSIGNMENT,user.email,createAssignment.assignmentid)
         }
         assignment ? new ResponseEntity<>("created successfully",HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
@@ -163,20 +163,21 @@ class CreateAssignmentRestController {
         saveCreateAssignment ? new ResponseEntity<>(saveCreateAssignment,HttpStatus.OK) : new ResponseEntity<>("not found",HttpStatus.NOT_FOUND)
     }
 
-    void findUsersAndSendEmail(String classId,EmailTypes emailTypes,String sender){
+    void findUsersAndSendEmail(String classId,EmailTypes emailTypes,String sender,String assignmentId){
 
+        task {
+            List<User> users = userRepository.findByUniqueclassid(classId)
+            def toEmails = []
+            users.each {
+                toEmails.add(it.email)
+            }
+            String[] emails = new String[toEmails.size()]
+            emails = toEmails.toArray(emails)
+            String htmlMessage = emailUtils.createEmailMessage(emailTypes, sender)
+            String subject = emailUtils.createSubject(emailTypes)
 
-        List<User> users = userRepository.findByUniqueclassid(classId)
-        def toEmails = []
-        users.each {
-            toEmails.add(it.email)
-        }
-        String[] emails = new String[toEmails.size()]
-        emails = toEmails.toArray(emails)
-        String htmlMessage = emailUtils.createEmailMessage(emailTypes,sender)
-        String subject = emailUtils.createSubject(emailTypes)
-
-        mailService.sendHtmlMail(emails,subject,htmlMessage)
+            mailService.sendHtmlMail(emails, subject, htmlMessage)
+        }.then{println("Emails sent for assignment ${assignmentId}")}
 
     }
 

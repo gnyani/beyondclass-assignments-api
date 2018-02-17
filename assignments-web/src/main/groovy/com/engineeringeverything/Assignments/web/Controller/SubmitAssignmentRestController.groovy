@@ -14,8 +14,7 @@ import com.engineeringeverything.Assignments.core.constants.EmailTypes
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.oauth2.provider.OAuth2Authentication
-import org.springframework.web.bind.annotation.GetMapping
+import static groovyx.gpars.dataflow.Dataflow.task
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -113,11 +112,12 @@ class SubmitAssignmentRestController {
         def submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
         if(submitAssignment1){
 
-            String[] emails = [user.email]
-            String htmlMessage = emailUtils.createEmailMessage(EmailTypes.EVALUATION_DONE,teacheremail)
-            String subject = emailUtils.createSubject(EmailTypes.EVALUATION_DONE)
-
-            mailService.sendHtmlMail(emails,subject,htmlMessage)
+            task {
+                String[] emails = [user.email]
+                String htmlMessage = emailUtils.createEmailMessage(EmailTypes.EVALUATION_DONE, teacheremail)
+                String subject = emailUtils.createSubject(EmailTypes.EVALUATION_DONE)
+                mailService.sendHtmlMail(emails, subject, htmlMessage)
+            }.then {println("Sending mail task done to user ${user.email}")}
         }
         submitAssignment1 ? new ResponseEntity<>('Success',HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
     }

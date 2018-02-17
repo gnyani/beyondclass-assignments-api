@@ -8,6 +8,7 @@ versions += [
         junit                    : "4.11",
         oauth                    : "1.2.1.RELEASE",
         sendGrid                 : "2.2.2",
+        gpars                    : "1.2.1",
 
 ]
 libs+=[
@@ -25,5 +26,6 @@ libs+=[
         jackson                     : [group:'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'],
         junit                       : [group: 'junit', name: 'junit', version: "${versions.junit}"],
         groovyx                     : [group: 'org.codehaus.groovy.modules.http-builder', module: 'http-builder', version:'0.6'],
-        sendGrid                    : [group: 'com.sendgrid', name: 'sendgrid-java', version: "${versions.sendGrid}"]
+        sendGrid                    : [group: 'com.sendgrid', name: 'sendgrid-java', version: "${versions.sendGrid}"],
+        gpars                       : [group: 'org.codehaus.gpars', name: 'gpars', version: "${versions.gpars}"],
 ]

@@ -16,6 +16,7 @@ dependencies {
     compile(libs.junit)
     compile(libs.springBootStarterWeb)
     compile(libs.springBootStarter)
+    compile(libs.gpars)
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'
     compile group: 'info.debatty', name: 'java-string-similarity', version: '1.0.1'
 
