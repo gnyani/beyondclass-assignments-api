@@ -20,5 +20,9 @@ class AssignmentQuestionsAndAnswers {
 
     Object[] submittedQuestions
 
+    String userName
+
+    String rollNumber
+
     String timespent
 }

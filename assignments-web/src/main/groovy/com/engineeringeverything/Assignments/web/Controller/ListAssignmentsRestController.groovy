@@ -13,6 +13,7 @@ import com.engineeringeverything.Assignments.core.Repositories.SaveAssignmentRep
 import com.engineeringeverything.Assignments.core.Repositories.SaveCreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveProgrammingAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
+import com.engineeringeverything.Assignments.core.Repositories.UserRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import com.engineeringeverything.Assignments.web.Converter.CreateAssignmentConverter
 import constants.AssignmentType
@@ -41,6 +42,9 @@ class ListAssignmentsRestController {
 
     @Autowired
     SaveProgrammingAssignmentRepository saveProgrammingAssignmentRepository
+
+    @Autowired
+    UserRepository userRepository
 
     @Autowired
     CreateAssignmentRepository createAssignmentRepository
@@ -135,7 +139,7 @@ class ListAssignmentsRestController {
         CreateAssignment createAssignment1 = createAssignmentRepository.findByAssignmentid(assignmentSubmissionDetails.assignmentid)
         SubmitAssignment submitAssignment1 =  submitAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentSubmissionDetails.assignmentid,assignmentSubmissionDetails.email))
 
-
+        def  user  =  userRepository.findByEmail(assignmentSubmissionDetails.email)
         def  questions = getQuestionsOfStudent(createAssignment1,assignmentSubmissionDetails.email)
 
         assignmentQuestionsAndAnswers.with {
@@ -143,6 +147,8 @@ class ListAssignmentsRestController {
             submitAssignment = submitAssignment1
             timespent = formatDuration(submitAssignment1.timespent)
             submittedQuestions = questions
+            userName = user ?. firstName + user ?. lastName
+            rollNumber = user.rollNumber
         }
         createAssignment1 && submitAssignment1 ? new ResponseEntity<>(assignmentQuestionsAndAnswers,HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
 
