@@ -180,7 +180,7 @@ class CreateAssignmentRestController {
         Boolean notifynow = false
         def previousRemainder = reminderNotifierRepository.findByAssignmentId(reminderNotifier.assignmentId)
         if(previousRemainder){
-            int numberOfDaysSince = previousRemainder.lastNotified - new Date()
+            int numberOfDaysSince = new Date() - previousRemainder.lastNotified
             if(numberOfDaysSince > 1)
                 notifynow = true
         }else{
