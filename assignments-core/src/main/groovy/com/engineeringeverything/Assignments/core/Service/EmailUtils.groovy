@@ -13,9 +13,13 @@ class EmailUtils {
     @Value('${beyondclass.host}')
     private String hostName
 
-    public String createEmailMessage(EmailTypes type, String sender){
+    public String createEmailMessage(EmailTypes type, String ... strings){
 
         String message = "";
+
+        String sender = strings[0]
+
+        String noOfDays = strings[1]
 
         if(type == EmailTypes.ANNOUNCEMENT){
 
@@ -46,6 +50,16 @@ class EmailUtils {
                     "</form>" +
                     "<br />" +
                     "<h4>          --Team Beyond Class"
+        }else if(type == EmailTypes.REMINDER_NOTIFIER){
+            message = "<h3> ${noOfDays} days left for your assignment.<h3>" +
+                    "<br />" +
+                    "<h3>Reminder sent by your teacher ${sender} </h3>" +
+                    "<br />" +
+                    "<form action=\"http://${hostName}/#/teacherstudentspace\">\n" +
+                    "    <input type=\"submit\" value=\"view assignment\" />\n" +
+                    "</form>" +
+                    "<br />" +
+                    "<h4>      --Team Beyond Class"
         }
         return message
     }
@@ -59,6 +73,8 @@ class EmailUtils {
             subject = "You got a new Announcement"
         else if(type == EmailTypes.EVALUATION_DONE)
             subject = "Your Assignment has been evaluated"
+        else if(type == EmailTypes.REMINDER_NOTIFIER)
+            subject = "Reminder for your assignment"
 
         return subject
     }

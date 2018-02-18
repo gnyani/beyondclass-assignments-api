@@ -30,7 +30,7 @@ public class MailService{
     @Autowired
     private SendGrid sendGrid;
 
-    @Value("${email.from-address}")
+    @Value('${email.from-address}')
     private String fromEmailAddress;
 
     private static final Object mailSendSyncLock = new Object();

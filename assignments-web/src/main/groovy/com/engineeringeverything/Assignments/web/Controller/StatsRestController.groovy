@@ -64,7 +64,7 @@ class StatsRestController {
          teacherAssignmentStats.setNumberOfDaysLeft(0)
 
         teacherAssignmentStats.setNumberOfStudentsSubmitted(submitAssignmentRepository.countByTempassignmentidStartingWith(assignmentId))
-        int endindexofUniqueClassId = ordinalIndexOf(assignmentId,'-',6)
+        int endindexofUniqueClassId = serviceUtilities.ordinalIndexOf(assignmentId,'-',6)
 
         teacherAssignmentStats.setTotalEligibleNumberOfStudents(userRepository.countByUniqueclassid(assignmentId.substring(0,endindexofUniqueClassId)))
 
@@ -111,12 +111,7 @@ class StatsRestController {
     }
 
 
-    public static int ordinalIndexOf(String str, String substr, int n) {
-        int pos = str.indexOf(substr)
-        while (--n > 0 && pos != -1)
-            pos = str.indexOf(substr, pos + 1)
-        return pos;
-    }
+
 
     public getAssignmentList(List<SubmitAssignment> submitAssignmentList){
         List<CreateAssignment> createAssignmentList = []
