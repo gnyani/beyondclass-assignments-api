@@ -23,4 +23,8 @@ class CodingAssignmentResponse {
 
     int totalCount
 
+    String [] memory
+
+    String [] runtime
+
 }

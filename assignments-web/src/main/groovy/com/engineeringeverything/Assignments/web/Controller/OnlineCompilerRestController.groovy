@@ -209,11 +209,11 @@ class OnlineCompilerRestController {
 
         CodingAssignmentResponse codingAssignmentResponse = new CodingAssignmentResponse()
 
+        def jsonResponse = slurper.parseText(response)
 
         if(validation){
             codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.SUCCESS
         }else{
-            def jsonResponse = slurper.parseText(response)
             if(jsonResponse.result.compilemessage != '') {
                 codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.COMPILER_ERROR
                 codingAssignmentResponse.errorMessage = jsonResponse.result.compilemessage
@@ -243,6 +243,8 @@ class OnlineCompilerRestController {
                 }
             }
         }
+        codingAssignmentResponse.runtime = jsonResponse.result.time
+        codingAssignmentResponse.memory = jsonResponse.result.memory
         codingAssignmentResponse
     }
 
