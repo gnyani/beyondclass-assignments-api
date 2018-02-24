@@ -45,6 +45,10 @@ class SubmitAssignment {
     @NotNull
     long timespent
 
+    String username
+
+    String rollnumber
+
     CodingAssignmentResponse[] codingAssignmentResponse
 
     List questionIndex

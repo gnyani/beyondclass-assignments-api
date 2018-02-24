@@ -116,6 +116,8 @@ class OnlineCompilerRestController {
         submitProgrammingAssignment.with {
             mode = programmingAssignment.language
             email = programmingAssignment.email
+            username = serviceUtilities.generateUserName(user)
+            rollnumber = user ?. rollNumber
             answers = programmingAssignment.source
             timespent = programmingAssignment.timespent
             questionIndex = createAssignment.studentQuestionMapping.get(programmingAssignment.email)

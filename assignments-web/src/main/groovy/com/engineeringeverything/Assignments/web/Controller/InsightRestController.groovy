@@ -73,6 +73,7 @@ class InsightRestController {
           for (def i = 1; i < submitAssignment?.answers?.length + 1; i++) {
               def maxMatch = 0.6
               def matchedUsers = []
+              def matchedRollNumbers = []
               NormalizedLevenshtein l = new NormalizedLevenshtein();
               for (def j = 0; j < allassignments.size(); j++) {
 
@@ -80,21 +81,22 @@ class InsightRestController {
                   if(answerIndex != -1) {
                       def currentMatch = l.distance(submitAssignment?.answers[i - 1], allassignments[j]?.answers[answerIndex])
                       if (1 - currentMatch > maxMatch) {
-                          matchedUsers << allassignments[j].email
+                          matchedUsers << allassignments[j].username
+                          matchedRollNumbers << allassignments[j].rollnumber
                       }
                   }
               }
               if (matchedUsers.size() > 0) {
                   if (insights.insight1 == null)
-                      insights.insight1 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${matchedUsers.toString()}"
+                      insights.insight1 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
                   else if (insights.insight2 == null)
-                      insights.insight2 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${matchedUsers.toString()}"
+                      insights.insight2 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
                   else if (insights.insight3 == null)
-                      insights.insight3 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${matchedUsers.toString()}"
+                      insights.insight3 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
                   else if (insights.insight4 == null)
-                      insights.insight4 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${matchedUsers.toString()}"
+                      insights.insight4 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
                   else if (insights.insight5 == null)
-                      insights.insight5 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${matchedUsers.toString()}"
+                      insights.insight5 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
                  }
           }
           submitAssignment.insights = insights
@@ -110,6 +112,22 @@ class InsightRestController {
         def answerIndex = otherAssignment.questionIndex.indexOf(questionNumber)
 
         answerIndex
+    }
+
+    String printInsights(def usernames, def rollnumbers){
+
+        StringBuilder stringBuilder = new StringBuilder()
+        stringBuilder.append('[ ')
+        usernames.size().times{
+            stringBuilder.append(usernames[it])
+            stringBuilder.append('(')
+            stringBuilder.append(rollnumbers[it])
+            stringBuilder.append(')')
+            if(it != (usernames.size()-1))
+            stringBuilder.append(',')
+        }
+        stringBuilder.append(' ]')
+        stringBuilder.toString()
     }
 
 

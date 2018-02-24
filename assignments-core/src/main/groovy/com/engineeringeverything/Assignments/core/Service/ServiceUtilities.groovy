@@ -73,6 +73,16 @@ class ServiceUtilities {
         userDetails
     }
 
+    public static String generateUserName(User user){
+        StringBuilder stringBuilder = new StringBuilder()
+        stringBuilder.append(user.firstName)
+        if(user.lastName != null) {
+            stringBuilder.append(" ")
+            stringBuilder.append(user.lastName)
+        }
+        stringBuilder.toString()
+    }
+
     public static int ordinalIndexOf(String str, String substr, int n) {
         int pos = str.indexOf(substr)
         while (--n > 0 && pos != -1)

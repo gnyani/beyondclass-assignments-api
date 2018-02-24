@@ -249,8 +249,11 @@ class CreateAssignmentRestController {
             String subject = emailUtils.createSubject(emailTypes)
 
             mailService.sendHtmlMail(emails, subject, htmlMessage)
-        }.then{println("Emails sent for assignment ${assignmentId}")}
-
+        }.then{Exception exception ->
+            if(exception)
+                println("encountered an exception while sending the email ${exception}")
+            println("Emails sent for assignment ${assignmentId}")
+        }
     }
 
 }

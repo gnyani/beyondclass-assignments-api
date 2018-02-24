@@ -1,6 +1,7 @@
 package com.engineeringeverything.Assignments.core.Service
 
 import com.engineeringeverything.Assignments.core.constants.EmailTypes
+import groovy.text.SimpleTemplateEngine
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
@@ -19,7 +20,6 @@ class EmailUtils {
 
         String sender = strings[0]
 
-        String noOfDays = strings[1]
 
         if(type == EmailTypes.ANNOUNCEMENT){
 
@@ -33,13 +33,14 @@ class EmailUtils {
 
         }else if(type == EmailTypes.ASSIGNMENT){
 
-            message = "<h3> You got a new ${type.toString()} from your teacher ${sender} </h3>" +
-                    "<br />" +
-                    "<form action=\"http://${hostName}/#/teacherstudentspace\">\n" +
-                    "    <input type=\"submit\" value=\"view ${type}\" />\n" +
-                    "</form>" +
-                    "<br />" +
-                    "<h4>          --Team Beyond Class"
+            def emailTemplate = getClass().getResource("/AssignmentTemplate.html")
+            Map<String,String> config = new HashMap<>()
+            config.put("type",EmailTypes.ASSIGNMENT.toString())
+            config.put("hostname",hostName)
+            config.put("sender",sender)
+            def engine = new SimpleTemplateEngine()
+            def template = engine.createTemplate(emailTemplate).make(config)
+            message = template.toString()
 
         }else if(type == EmailTypes.EVALUATION_DONE){
 
@@ -51,6 +52,7 @@ class EmailUtils {
                     "<br />" +
                     "<h4>          --Team Beyond Class"
         }else if(type == EmailTypes.REMINDER_NOTIFIER){
+            String noOfDays = strings[1]
             message = "<h3> ${noOfDays} days left for your assignment.<h3>" +
                     "<br />" +
                     "<h3>Reminder sent by your teacher ${sender} </h3>" +
