@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
  */
 interface SubmitAssignmentRepository extends MongoRepository<SubmitAssignment,String>{
 
-    List<SubmitAssignment> findByTempassignmentidStartingWith(String id)
+    List<SubmitAssignment> findByTempassignmentidStartingWithOrderByRollnumber(String id)
 
     List<SubmitAssignment> findByTempassignmentidStartingWithOrderByMarksGiven(String id)
 

@@ -6,8 +6,6 @@ import api.submitassignment.SubmitAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Service.CsvGenerator
-import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
-import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -135,7 +133,7 @@ class InsightRestController {
     public ResponseEntity<?> generateExcel(@PathVariable(value = "assignmentid" , required = true) String assignmentid,HttpServletResponse response){
 
 
-        List<SubmitAssignment> submitAssignments = submitAssignmentRepository.findByTempassignmentidStartingWith(assignmentid)
+        List<SubmitAssignment> submitAssignments = submitAssignmentRepository.findByTempassignmentidStartingWithOrderByRollnumber(assignmentid)
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
 
         String csv = csvGenerator.toCsv(submitAssignments,assignment)
