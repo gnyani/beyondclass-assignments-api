@@ -19,7 +19,7 @@ class UtilityRestController {
     CreateAssignmentRepository createAssignmentRepository
 
     @ResponseBody
-    @GetMapping(value = '/assignment/questions/{assignmentid:.+}')
+    @GetMapping(value = '/admin/questions/{assignmentid:.+}')
     public ResponseEntity<?> getquestions(@PathVariable(value="assignmentid" , required = true) String assignmentid){
 
         def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
