@@ -28,9 +28,13 @@ class CsvGenerator {
         }
 
         list ?. each {
-            def user = userRepository.findByEmail(it.email)
-            stringBuilder.append(user.rollNumber).append(',')
-            stringBuilder.append(it.toCsv()).append('\n')
+            if(it.rollnumber != null)
+                stringBuilder.append(it.rollnumber)
+            else{
+                def user = userRepository.findByEmail(it.email)
+                stringBuilder.append(user.rollNumber)
+            }
+            stringBuilder.append(',').append(it.toCsv()).append('\n')
         }
 
         stringBuilder.toString()
