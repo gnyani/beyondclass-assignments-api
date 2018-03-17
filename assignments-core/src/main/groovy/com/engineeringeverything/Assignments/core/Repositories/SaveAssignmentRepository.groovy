@@ -9,4 +9,5 @@ import org.springframework.data.mongodb.repository.MongoRepository
 interface SaveAssignmentRepository extends MongoRepository<SaveAssignment,String>{
 
     SaveAssignment findByTempassignmentid(String id)
+    int countByTempassignmentidStartingWith(String id)
 }

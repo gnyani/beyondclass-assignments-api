@@ -8,11 +8,14 @@ import api.stats.TeacherAssignmentStats
 import api.submitassignment.AssignmentSubmissionStatus
 import api.submitassignment.SubmitAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
+import com.engineeringeverything.Assignments.core.Repositories.SaveAssignmentRepository
+import com.engineeringeverything.Assignments.core.Repositories.SaveProgrammingAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 
 import com.engineeringeverything.Assignments.core.Repositories.UserRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import com.engineeringeverything.Assignments.web.Converter.SubmitAssignmentConverter
+import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -31,6 +34,12 @@ class StatsRestController {
 
     @Autowired
     SubmitAssignmentRepository submitAssignmentRepository
+
+    @Autowired
+    SaveProgrammingAssignmentRepository saveProgrammingAssignmentRepository
+
+    @Autowired
+    SaveAssignmentRepository saveAssignmentRepository
 
     @Autowired
     UserRepository userRepository
@@ -75,6 +84,14 @@ class StatsRestController {
         int assignmentsCorrected = teacherAssignmentStats.numberOfStudentsSubmitted - assignmentsNotCorrected
         teacherAssignmentStats.setEvaluationsDone(assignmentsCorrected)
         teacherAssignmentStats.setPercentOfEvaluationsDone(calculatePerncentage(assignmentsCorrected,teacherAssignmentStats.numberOfStudentsSubmitted))
+
+        if(createAssignment.assignmentType == AssignmentType.THEORY){
+            teacherAssignmentStats.studentsWorked = saveAssignmentRepository.countByTempassignmentidStartingWith(assignmentId)
+        }else if(createAssignment.assignmentType == AssignmentType.CODING){
+            teacherAssignmentStats.studentsWorked = saveProgrammingAssignmentRepository.countByTempassignmentidStartingWith(assignmentId)
+        }
+
+        teacherAssignmentStats.setPercentOfStudentsWorked(calculatePerncentage(teacherAssignmentStats.studentsWorked,teacherAssignmentStats.totalEligibleNumberOfStudents))
 
         new ResponseEntity<>(teacherAssignmentStats,HttpStatus.OK)
     }

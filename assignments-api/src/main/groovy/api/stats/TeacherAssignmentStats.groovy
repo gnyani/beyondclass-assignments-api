@@ -15,19 +15,23 @@ class TeacherAssignmentStats {
 
     List<SubmitAssignmentResponse> submitAssignment;
 
-    int numberOfDaysLeft;
+    int numberOfDaysLeft
 
-    int totalNumberOfDays;
+    int totalNumberOfDays
 
-    int numberOfStudentsSubmitted;
+    int numberOfStudentsSubmitted
 
-    int totalEligibleNumberOfStudents;
+    int totalEligibleNumberOfStudents
 
-    int percentdaysCompleted;
+    int percentdaysCompleted
 
-    int percentStudentsSubmitted;
+    int percentStudentsSubmitted
 
-    int evaluationsDone;
+    int evaluationsDone
 
-    int percentOfEvaluationsDone;
+    int percentOfEvaluationsDone
+
+    int studentsWorked
+
+    int percentOfStudentsWorked
 }
