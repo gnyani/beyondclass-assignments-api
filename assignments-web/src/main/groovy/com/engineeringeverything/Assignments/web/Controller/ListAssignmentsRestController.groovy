@@ -72,7 +72,23 @@ class ListAssignmentsRestController {
 
         def list = createAssignmentRepository.findByAssignmentidStartingWithOrderByCreateDateDesc(assignmentid)
 
-        list ? new ResponseEntity<>(list,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
+        def convertedList = []
+
+        list.each {
+            convertedList << createAssignmentConverter.convertToListCreateAssignment(it)
+        }
+
+        list ? new ResponseEntity<>(convertedList,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
+    }
+
+
+    @ResponseBody
+    @PostMapping(value = '/teacher/getquestions')
+    public ResponseEntity<?> getQuestions(@RequestBody String assignmentid){
+
+        def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
+
+        assignment ? new ResponseEntity<>(assignment.questions,HttpStatus.OK) : new ResponseEntity<>("record not found",HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     @ResponseBody
@@ -95,7 +111,12 @@ class ListAssignmentsRestController {
         def user = serviceUtilities.findUserByEmail(email)
         def assignmentid = serviceUtilities.generateFileName(user.university,user.college,user.branch,user.section,user.startYear,user.endYear)
         def list = createAssignmentRepository.findByAssignmentidStartingWithAndSubmittedstudentsNotContainingAndLastdateAfterOrderByLastdate(assignmentid,email,new Date()-1)
-        list ? new ResponseEntity<>(list,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
+        def convertedList = []
+
+        list.each {
+            convertedList << createAssignmentConverter.convertToListCreateAssignment(it)
+        }
+        list ? new ResponseEntity<>(convertedList,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
     }
 
     @ResponseBody

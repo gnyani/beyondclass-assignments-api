@@ -2,6 +2,7 @@ package com.engineeringeverything.Assignments.web.Converter
 
 import api.createassignment.CreateAssignment
 import api.createassignment.CreateAssignmentResponse
+import api.createassignment.ListCreateAssignment
 import org.springframework.stereotype.Component
 
 /**
@@ -19,4 +20,22 @@ class CreateAssignmentConverter {
         }
         createAssignmentResponse
     }
+
+    ListCreateAssignment convertToListCreateAssignment(CreateAssignment createAssignment){
+        ListCreateAssignment listCreateAssignment = new ListCreateAssignment()
+        listCreateAssignment.with {
+            assignmentid = createAssignment.assignmentid
+            assignmentType = createAssignment.assignmentType
+            batch = createAssignment.batch
+            email = createAssignment.email
+            propicurl = createAssignment.propicurl
+            createDate = createAssignment.createDate
+            subject = createAssignment.subject
+            message = createAssignment.message
+            lastdate = createAssignment.lastdate
+        }
+        listCreateAssignment
+    }
+
+
 }
