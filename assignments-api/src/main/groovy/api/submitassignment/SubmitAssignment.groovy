@@ -59,6 +59,8 @@ class SubmitAssignment {
 
     double marksGiven;
 
+    String remarks
+
     Insights insights
 
     AssignmentSubmissionStatus status;

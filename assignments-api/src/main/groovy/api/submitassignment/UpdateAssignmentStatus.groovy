@@ -18,5 +18,10 @@ class UpdateAssignmentStatus {
     @JsonProperty
     @NotNull
     @NotEmpty
+    String remarks
+
+    @JsonProperty
+    @NotNull
+    @NotEmpty
     AssignmentSubmissionStatus status;
 }

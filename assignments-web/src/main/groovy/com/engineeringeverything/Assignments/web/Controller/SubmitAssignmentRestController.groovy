@@ -114,6 +114,7 @@ class SubmitAssignmentRestController {
         }
         submitAssignment.setMarksGiven(updateAssignmentStatus.marks)
         submitAssignment.setStatus(updateAssignmentStatus.status)
+        submitAssignment.setRemarks(updateAssignmentStatus.remarks)
 
         def submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
         if(submitAssignment1){
