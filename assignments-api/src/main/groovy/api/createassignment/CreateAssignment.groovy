@@ -73,7 +73,7 @@ class CreateAssignment {
     @JsonProperty
     List<String []> outputs
 
-    HashMap<String,List> studentQuestionMapping
+    HashMap<String,List<Integer>> studentQuestionMapping
 
     HashSet<String> submittedstudents
 
