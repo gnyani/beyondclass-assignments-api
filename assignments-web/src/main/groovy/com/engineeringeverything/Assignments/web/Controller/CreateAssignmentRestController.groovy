@@ -71,10 +71,13 @@ class CreateAssignmentRestController {
 
             createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
                 section,startyear,endyear,createAssignment.email,createAssignment.subject,time))
-        else
+        else if(createAssignment.assignmentType == AssignmentType.CODING)
 
             createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
                     section,startyear,endyear,createAssignment.email,time))
+        else
+            createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
+                    section,startyear,endyear,createAssignment.email,createAssignment.subject,time))
 
         def assignment = createAssignmentRepository.save(createAssignment)
         if(assignment) {
