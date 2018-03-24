@@ -153,7 +153,7 @@ class CreateAssignmentRestController {
         }
 
         if(saveCreateAssignment1 == null)
-            if(saveCreateAssignment.assignmentType == AssignmentType.THEORY)
+            if(saveCreateAssignment.assignmentType == AssignmentType.THEORY || saveCreateAssignment.assignmentType == AssignmentType.OBJECTIVE)
 
                 saveCreateAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
                         section,startyear,endyear,saveCreateAssignment.email,saveCreateAssignment.subject,time))
