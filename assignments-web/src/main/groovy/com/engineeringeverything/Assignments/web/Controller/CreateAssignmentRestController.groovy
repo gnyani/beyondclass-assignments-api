@@ -190,7 +190,7 @@ class CreateAssignmentRestController {
             notifynow = true
         }
         if(notifynow) {
-            def submittedUsers = submitAssignmentRepository.findByTempassignmentidStartingWith(reminderNotifier.assignmentId)
+            def submittedUsers = submitAssignmentRepository.findByTempassignmentidStartingWithOrderByRollnumber(reminderNotifier.assignmentId)
 
             CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(reminderNotifier.assignmentId)
 
