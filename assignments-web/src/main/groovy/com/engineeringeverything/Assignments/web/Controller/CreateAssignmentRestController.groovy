@@ -2,6 +2,7 @@ package com.engineeringeverything.Assignments.web.Controller
 
 import api.createassignment.CreateAssignment
 import api.createassignment.SaveCreateAssignment
+import api.createassignment.UpdateCreateAssignment
 import api.notifications.Notifications
 import api.notifications.ReminderNotifier
 import api.user.User
@@ -175,6 +176,27 @@ class CreateAssignmentRestController {
         SaveCreateAssignment saveCreateAssignment = saveCreateAssignmentRepository.findByAssignmentid(assignmentId)
 
         saveCreateAssignment ? new ResponseEntity<>(saveCreateAssignment,HttpStatus.OK) : new ResponseEntity<>("not found",HttpStatus.NOT_FOUND)
+    }
+
+    @ResponseBody
+    @GetMapping(value = '/teacher/get/assignment/{assignmentId:.+}')
+    public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId){
+
+        CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
+
+        createAssignment ? new ResponseEntity<>(createAssignment,HttpStatus.OK) : new ResponseEntity<>("not found",HttpStatus.NOT_FOUND)
+    }
+
+    @ResponseBody
+    @PostMapping(value = 'teacher/update/{assignmentId:.+}')
+    public  ResponseEntity<?> updateAssignment(@PathVariable(value="assignmentId", required = true) String assignmentId, @RequestBody UpdateCreateAssignment updatedAssignment){
+        CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
+        if(updatedAssignment.assignmentType == AssignmentType.THEORY){
+            createAssignment.questions = updatedAssignment.questions
+            createAssignment.lastdate = updatedAssignment.lastdate
+        }
+        def newAssignment = createAssignmentRepository.save(createAssignment)
+        newAssignment ? new ResponseEntity<?>("Update success",HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     @ResponseBody
