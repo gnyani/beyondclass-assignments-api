@@ -6,6 +6,7 @@ import api.submitassignment.SubmitAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Service.CsvGenerator
+import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -69,7 +70,7 @@ class InsightRestController {
           insights = new Insights()
 
           for (def i = 1; i < submitAssignment?.answers?.length + 1; i++) {
-              def maxMatch = 0.6
+              def maxMatch = getThreshold(submitAssignment)
               def matchedUsers = []
               def matchedRollNumbers = []
               NormalizedLevenshtein l = new NormalizedLevenshtein();
@@ -101,6 +102,19 @@ class InsightRestController {
           submitAssignmentRepository.save(submitAssignment)
       }
         insights
+    }
+
+    double getThreshold(SubmitAssignment submitAssignment){
+        def threshold = 0.60
+        def assignmentid= submitAssignment.tempassignmentid.replace('-'+submitAssignment ?. email,'')
+
+        def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
+        if(assignment.assignmentType == AssignmentType.THEORY){
+            threshold = 0.80
+        }else if(assignment.assignmentType == AssignmentType.CODING){
+            threshold = 0.60
+        }
+        threshold
     }
 
     int findAnswerToCompare(int index, List questionIndex , SubmitAssignment otherAssignment){
