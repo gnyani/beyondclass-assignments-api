@@ -7,12 +7,12 @@ import org.springframework.data.mongodb.core.mapping.Document
 
 import javax.validation.constraints.NotNull
 
-/**
- * Created by GnyaniMac on 14/10/17.
- */
-@Document(collection = 'temp-assignments')
-class SaveAssignment {
 
+/**
+ * Created by manoj on 25/03/18.
+ */
+@Document(collection = 'temp-objective-assignments')
+class SaveObjectiveAssignment {
     @Id
     @JsonProperty
     @NotEmpty
@@ -26,8 +26,10 @@ class SaveAssignment {
     String email;
 
     @JsonProperty
-    @NotNull
-    String[] answers;
+    Object[] options
+
+    @JsonProperty
+    Object[] userValidity
 
     @JsonProperty
     @NotEmpty

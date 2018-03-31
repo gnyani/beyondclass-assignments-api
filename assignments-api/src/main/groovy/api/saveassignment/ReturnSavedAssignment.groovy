@@ -11,6 +11,12 @@ class ReturnSavedAssignment {
 
     String[] answers
 
+    Object[] options
+
+    Object[] validity
+
+    Object[] userValidity
+
     String source
 
     String language

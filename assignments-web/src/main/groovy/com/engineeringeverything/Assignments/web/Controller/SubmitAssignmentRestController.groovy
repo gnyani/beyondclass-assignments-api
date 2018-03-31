@@ -8,6 +8,7 @@ import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentR
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.UserRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
+import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -36,10 +37,9 @@ class SubmitAssignmentRestController {
     @Autowired
     ServiceUtilities serviceUtilities
 
-
     @ResponseBody
-    @PostMapping(value = '/student/submit')
-    public ResponseEntity<?> tempSaveAssignment(@RequestBody SubmitAssignment submitAssignment){
+    @PostMapping(value = '/student/objectiveSubmit')
+    public ResponseEntity<?> tempObjectiveSaveAssignment(@RequestBody SubmitAssignment submitAssignment){
         def user = serviceUtilities.findUserByEmail(submitAssignment.email)
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(submitAssignment.tempassignmentid)
         submitAssignment.setTempassignmentid(serviceUtilities.generateFileName(submitAssignment.tempassignmentid,submitAssignment.email))
@@ -64,6 +64,52 @@ class SubmitAssignmentRestController {
         createAssignment.setSubmittedDates(submittedDates)
         CreateAssignment createAssignment1 = createAssignmentRepository.save(createAssignment)
         submitAssignment1 && createAssignment1  ? new ResponseEntity<>("Saved Successfully", HttpStatus.OK) : new ResponseEntity<>("Something Went Wrong", HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+
+    @ResponseBody
+    @PostMapping(value = '/student/submit')
+    public ResponseEntity<?> tempSaveAssignment(@RequestBody SubmitAssignment submitAssignment){
+        def user = serviceUtilities.findUserByEmail(submitAssignment.email)
+        CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(submitAssignment.tempassignmentid)
+        submitAssignment.setTempassignmentid(serviceUtilities.generateFileName(submitAssignment.tempassignmentid,submitAssignment.email))
+        String propicurl = user.normalpicUrl ?: user.googlepicUrl
+        submitAssignment.setPropicurl(propicurl)
+        submitAssignment.setStatus(AssignmentSubmissionStatus.PENDING_APPROVAL)
+        if(createAssignment.getAssignmentType().equals(AssignmentType.OBJECTIVE)){
+            System.err.println("hello wolrd this is objective  assignemts")
+            def marks = getMarks(submitAssignment.getUserValidity(), createAssignment.getValidity());
+            submitAssignment.setMarksGiven(marks);
+            submitAssignment.setStatus(AssignmentSubmissionStatus.ACCEPTED);
+        }
+        SubmitAssignment submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
+        def currentSubmittedStudents =  createAssignment.getSubmittedstudents()
+        def submittedDates = createAssignment.getSubmittedDates()
+        if(currentSubmittedStudents) {
+            currentSubmittedStudents.add(submitAssignment.email)
+            submittedDates.put(submitAssignment.email, new Date())
+        }
+        else
+        {
+            currentSubmittedStudents = new HashSet<String>()
+            currentSubmittedStudents.add(submitAssignment.email)
+            submittedDates = new HashMap<String, Date>()
+            submittedDates.put(submitAssignment.email,new Date())
+        }
+        createAssignment.setSubmittedstudents(currentSubmittedStudents)
+        createAssignment.setSubmittedDates(submittedDates)
+        CreateAssignment createAssignment1 = createAssignmentRepository.save(createAssignment)
+        submitAssignment1 && createAssignment1  ? new ResponseEntity<>("Saved Successfully", HttpStatus.OK) : new ResponseEntity<>("Something Went Wrong", HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    def Double getMarks(Object[] userValidity, Object[] validity) {
+        int marks =0;
+        for(int i=0;i<validity.length;i++){
+            if(validity[i]==userValidity[i]){
+                marks+=1;
+            }
+        }
+        return (marks/validity.length)* 5;
     }
 
     @PostMapping(value = '/update/evaluation/{submissionid:.+}')

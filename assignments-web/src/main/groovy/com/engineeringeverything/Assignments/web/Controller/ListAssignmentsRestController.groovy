@@ -6,10 +6,12 @@ import api.evaluateassignment.AssignmentQuestionsAndAnswers
 import api.evaluateassignment.AssignmentSubmissionDetails
 import api.saveassignment.ReturnSavedAssignment
 import api.saveassignment.SaveAssignment
+import api.saveassignment.SaveObjectiveAssignment
 import api.saveassignment.SaveProgrammingAssignment
 import api.submitassignment.SubmitAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveAssignmentRepository
+import com.engineeringeverything.Assignments.core.Repositories.SaveObjectiveAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveProgrammingAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
@@ -47,6 +49,9 @@ class ListAssignmentsRestController {
     @Autowired
     SubmitAssignmentRepository submitAssignmentRepository
 
+    @Autowired
+    SaveObjectiveAssignmentRepository saveObjectiveAssignmentRepository
+
     @ResponseBody
     @PostMapping(value = '/teacher/list')
     public ResponseEntity<?> listAssignments (@RequestBody TeacherAssignmentList teacherAssignmentList){
@@ -78,9 +83,13 @@ class ListAssignmentsRestController {
     @PostMapping(value = '/get/{assignmentId:.+}')
     public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId,@RequestBody String email){
         ReturnSavedAssignment returnSavedAssignment = new ReturnSavedAssignment()
+        System.err.println(assignmentId);
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
         returnSavedAssignment.setQuestions(assignment?.getQuestions())
-        returnSavedAssignment.setAssignmentType(assignment.assignmentType)
+        returnSavedAssignment.setOptions(assignment?.getOptions())
+        returnSavedAssignment.setValidity(assignment?.getValidity())
+        returnSavedAssignment.setAssignmentType(assignment?.assignmentType)
+        returnSavedAssignment.setUserValidity(assignment?.getUserValidity())
 
         if(assignment.assignmentType == AssignmentType.THEORY) {
             SaveAssignment saveAssignment = saveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
@@ -96,10 +105,14 @@ class ListAssignmentsRestController {
             returnSavedAssignment.setLanguage(saveProgrammingAssignment ?. language)
             returnSavedAssignment.setTheme(saveProgrammingAssignment ?. theme)
             return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
+        }else if(assignment.assignmentType == AssignmentType.OBJECTIVE){
+            SaveObjectiveAssignment saveObjectiveAssignment = saveObjectiveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
+            returnSavedAssignment.setUserValidity(saveObjectiveAssignment?.getUserValidity())
+            if(saveObjectiveAssignment?.getTimespent() != null)
+                returnSavedAssignment.setTimespent(saveObjectiveAssignment.getTimespent())
+            return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
         }
     }
-
-
 
     @ResponseBody
     @PostMapping(value = '/evaluate')

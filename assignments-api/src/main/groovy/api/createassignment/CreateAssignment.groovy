@@ -67,10 +67,13 @@ class CreateAssignment {
     String[] outputs
 
     @JsonProperty
-    String[] options;
+    Object[] userValidity;
 
     @JsonProperty
-    boolean[] validity;
+    Object[] options;
+
+    @JsonProperty
+    Object[] validity;
 
     HashSet<String> submittedstudents
 
