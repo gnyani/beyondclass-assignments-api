@@ -191,6 +191,14 @@ class CreateAssignmentRestController {
         if(updatedAssignment.assignmentType == AssignmentType.THEORY){
             createAssignment.questions = updatedAssignment.questions
             createAssignment.lastdate = updatedAssignment.lastdate
+            createAssignment.message = updatedAssignment.message
+        }
+        else if(updatedAssignment.assignmentType == AssignmentType.CODING){
+            createAssignment.questions = updatedAssignment.questions
+            createAssignment.lastdate = updatedAssignment.lastdate
+            createAssignment.message = updatedAssignment.message
+            createAssignment.inputs = updatedAssignment.inputs
+            createAssignment.outputs = updatedAssignment.outputs
         }
         def newAssignment = createAssignmentRepository.save(createAssignment)
         newAssignment ? new ResponseEntity<?>("Update success",HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)

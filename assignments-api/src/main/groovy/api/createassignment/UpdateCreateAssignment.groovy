@@ -32,6 +32,12 @@ class UpdateCreateAssignment {
     Object[] questions
 
     @JsonProperty
+    List<String []> inputs
+
+    @JsonProperty
+    List<String []> outputs
+
+    @JsonProperty
     @NotEmpty
     @NotNull
     AssignmentType assignmentType
