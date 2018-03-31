@@ -43,6 +43,11 @@ class SubmitAssignment {
     @JsonProperty
     @NotEmpty
     @NotNull
+    Object[] userValidity;
+
+    @JsonProperty
+    @NotEmpty
+    @NotNull
     long timespent
 
     String username

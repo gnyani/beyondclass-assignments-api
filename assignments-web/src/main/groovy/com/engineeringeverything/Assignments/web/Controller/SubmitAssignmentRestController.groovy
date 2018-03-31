@@ -11,6 +11,7 @@ import com.engineeringeverything.Assignments.core.Service.EmailUtils
 import com.engineeringeverything.Assignments.core.Service.MailService
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import com.engineeringeverything.Assignments.core.constants.EmailTypes
+import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -58,6 +59,11 @@ class SubmitAssignmentRestController {
         submitAssignment.setRollnumber(user ?. rollNumber)
         submitAssignment.setQuestionIndex(createAssignment.studentQuestionMapping.get(submitAssignment.email))
         submitAssignment.setStatus(AssignmentSubmissionStatus.PENDING_APPROVAL)
+        if(createAssignment.getAssignmentType().equals(AssignmentType.OBJECTIVE)){
+            def marks = getMarks(submitAssignment.getUserValidity(), createAssignment.getValidity());
+            submitAssignment.setMarksGiven(marks);
+            submitAssignment.setStatus(AssignmentSubmissionStatus.ACCEPTED);
+        }
         SubmitAssignment submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
         def currentSubmittedStudents =  createAssignment.getSubmittedstudents()
         def submittedDates = createAssignment.getSubmittedDates()
@@ -76,6 +82,16 @@ class SubmitAssignmentRestController {
         createAssignment.setSubmittedDates(submittedDates)
         CreateAssignment createAssignment1 = createAssignmentRepository.save(createAssignment)
         submitAssignment1 && createAssignment1  ? new ResponseEntity<>("Saved Successfully", HttpStatus.OK) : new ResponseEntity<>("Something Went Wrong", HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    def Double getMarks(Object[] userValidity, Object[] validity) {
+        int marks =0;
+        for(int i=0;i<validity.length;i++){
+            if(validity[i]==userValidity[i]){
+                marks+=1;
+            }
+        }
+        return (marks/validity.length)* 5;
     }
 
     @PostMapping(value = '/update/evaluation/{submissionid:.+}')
