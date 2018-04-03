@@ -75,6 +75,7 @@ class CreateAssignment {
 
     HashMap<String,List<Integer>> studentQuestionMapping
 
+    @JsonProperty
     List<String[]> options;
 
     @JsonProperty
