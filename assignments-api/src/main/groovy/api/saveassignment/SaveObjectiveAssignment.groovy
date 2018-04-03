@@ -25,11 +25,9 @@ class SaveObjectiveAssignment {
     @NotEmpty
     String email;
 
-    @JsonProperty
-    Object[] options
 
     @JsonProperty
-    Object[] userValidity
+    List<int[]> userValidity
 
     @JsonProperty
     @NotEmpty

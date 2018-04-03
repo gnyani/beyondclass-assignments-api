@@ -23,8 +23,10 @@ class CsvGenerator {
 
         if(createAssignment.assignmentType == AssignmentType.THEORY) {
             stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1,Insight2,Insight3,Insight4,Insight5").append("\n")
-        }else{
+        }else if(createAssignment.assignmentType == AssignmentType.CODING){
             stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1,Insight2,Insight3,Insight4,Insight5,AssignmentStatus,TotalTestCasesCount,TotalPassedCount").append("\n")
+        }else if(createAssignment.assignmentType == AssignmentType.OBJECTIVE){
+            stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1").append("\n")
         }
 
         list ?. each {

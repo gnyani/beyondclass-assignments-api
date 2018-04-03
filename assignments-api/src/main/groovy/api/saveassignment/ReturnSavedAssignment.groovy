@@ -13,11 +13,11 @@ class ReturnSavedAssignment {
 
     String[] source
 
-    Object[] options
+    List<String[]> options
 
-    Object[] validity
+    List<int[]> validity
 
-    Object[] userValidity
+    List<int[]> userValidity
 
     String[] language
 

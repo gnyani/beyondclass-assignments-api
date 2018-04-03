@@ -60,9 +60,11 @@ class SubmitAssignmentRestController {
         submitAssignment.setQuestionIndex(createAssignment.studentQuestionMapping.get(submitAssignment.email))
         submitAssignment.setStatus(AssignmentSubmissionStatus.PENDING_APPROVAL)
         if(createAssignment.getAssignmentType().equals(AssignmentType.OBJECTIVE)){
-            def marks = getMarks(submitAssignment.getUserValidity(), createAssignment.getValidity());
+            def marks = getMarks(submitAssignment.getUserValidity(), getValidityOfQuestion(createAssignment,submitAssignment.email));
             submitAssignment.setMarksGiven(marks);
             submitAssignment.setStatus(AssignmentSubmissionStatus.ACCEPTED);
+            user.setPoints((user.points ? user.points : 0) + marks)
+            userRepository.save(user)
         }
         SubmitAssignment submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
         def currentSubmittedStudents =  createAssignment.getSubmittedstudents()
@@ -84,14 +86,14 @@ class SubmitAssignmentRestController {
         submitAssignment1 && createAssignment1  ? new ResponseEntity<>("Saved Successfully", HttpStatus.OK) : new ResponseEntity<>("Something Went Wrong", HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
-    def Double getMarks(Object[] userValidity, Object[] validity) {
-        int marks =0;
-        for(int i=0;i<validity.length;i++){
+    def Double getMarks(List<int[]> userValidity, List<int[]> validity) {
+        int correctCount = 0;
+        for(int i=0;i<validity.size();i++){
             if(validity[i]==userValidity[i]){
-                marks+=1;
+                correctCount+=1;
             }
         }
-        return (marks/validity.length)* 5;
+        return (correctCount/validity.size())* 5;
     }
 
     @PostMapping(value = '/update/evaluation/{submissionid:.+}')
@@ -147,4 +149,15 @@ class SubmitAssignmentRestController {
         }
         submitAssignment1 ? new ResponseEntity<>('Success',HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
     }
+
+    private List<int[]> getValidityOfQuestion(CreateAssignment createAssignment, String email) {
+        def validityList = []
+        def randList = createAssignment.studentQuestionMapping.get(email)
+        (0..createAssignment.numberOfQuesPerStudent - 1).each {
+            int randNum = randList.get(it).toString().toInteger()
+            validityList << createAssignment.validity[randNum]
+        }
+        validityList
+    }
 }
+

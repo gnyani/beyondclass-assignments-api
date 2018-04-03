@@ -14,4 +14,8 @@ class CreateAssignmentResponse {
     List<String []> inputs
 
     List<String []> outputs
+
+    List<String []> options
+
+    List<int []> validity
 }
