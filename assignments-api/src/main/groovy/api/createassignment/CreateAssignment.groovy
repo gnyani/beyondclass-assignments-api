@@ -75,6 +75,12 @@ class CreateAssignment {
 
     HashMap<String,List<Integer>> studentQuestionMapping
 
+    @JsonProperty
+    List<String[]> options;
+
+    @JsonProperty
+    List<int[]> validity;
+
     HashSet<String> submittedstudents
 
     HashMap<String,Date> submittedDates

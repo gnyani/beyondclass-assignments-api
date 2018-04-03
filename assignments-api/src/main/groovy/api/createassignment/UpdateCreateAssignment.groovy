@@ -38,6 +38,12 @@ class UpdateCreateAssignment {
     List<String []> outputs
 
     @JsonProperty
+    List<String []> options
+
+    @JsonProperty
+    List<int []> validity
+
+    @JsonProperty
     @NotEmpty
     @NotNull
     AssignmentType assignmentType

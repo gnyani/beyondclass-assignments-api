@@ -46,8 +46,6 @@ class InsightRestController {
 
         def assignmentid= submissionid.replace('-'+submitAssignment ?. email,'')
 
-        def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
-
         List<SubmitAssignment> allassignments = submitAssignmentRepository.findByTempassignmentidStartingWithAndSubmissionDateLessThan(assignmentid,submitAssignment ?. submissionDate)
 
         HashSet<SubmitAssignment> validAssignments = []
@@ -67,41 +65,69 @@ class InsightRestController {
     public def computeInsights(SubmitAssignment submitAssignment,HashSet<SubmitAssignment> allassignments){
         Insights insights = submitAssignment.insights
         if(insights == null) {
-          insights = new Insights()
+            insights = new Insights()
+            if(submitAssignment.answers != null){
+                for (def i = 1; i < submitAssignment?.answers?.length + 1; i++) {
+                    def maxMatch = getThreshold(submitAssignment)
+                    def matchedUsers = []
+                    def matchedRollNumbers = []
+                    NormalizedLevenshtein l = new NormalizedLevenshtein();
+                    for (def j = 0; j < allassignments.size(); j++) {
 
-          for (def i = 1; i < submitAssignment?.answers?.length + 1; i++) {
-              def maxMatch = getThreshold(submitAssignment)
-              def matchedUsers = []
-              def matchedRollNumbers = []
-              NormalizedLevenshtein l = new NormalizedLevenshtein();
-              for (def j = 0; j < allassignments.size(); j++) {
+                        def answerIndex = findAnswerToCompare(i - 1, submitAssignment.questionIndex, allassignments[j])
+                        if(answerIndex != -1) {
+                            def currentMatch = l.distance(submitAssignment?.answers[i - 1], allassignments[j]?.answers[answerIndex])
+                            if (1 - currentMatch > maxMatch) {
+                                matchedUsers << allassignments[j].username
+                                matchedRollNumbers << allassignments[j].rollnumber
+                            }
+                        }
+                    }
+                    if (matchedUsers.size() > 0) {
+                        if (insights.insight1 == null)
+                            insights.insight1 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
+                        else if (insights.insight2 == null)
+                            insights.insight2 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
+                        else if (insights.insight3 == null)
+                            insights.insight3 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
+                        else if (insights.insight4 == null)
+                            insights.insight4 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
+                        else if (insights.insight5 == null)
+                            insights.insight5 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
+                    }
+                }
 
-                  def answerIndex = findAnswerToCompare(i - 1, submitAssignment.questionIndex, allassignments[j])
-                  if(answerIndex != -1) {
-                      def currentMatch = l.distance(submitAssignment?.answers[i - 1], allassignments[j]?.answers[answerIndex])
-                      if (1 - currentMatch > maxMatch) {
-                          matchedUsers << allassignments[j].username
-                          matchedRollNumbers << allassignments[j].rollnumber
-                      }
-                  }
-              }
-              if (matchedUsers.size() > 0) {
-                  if (insights.insight1 == null)
-                      insights.insight1 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
-                  else if (insights.insight2 == null)
-                      insights.insight2 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
-                  else if (insights.insight3 == null)
-                      insights.insight3 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
-                  else if (insights.insight4 == null)
-                      insights.insight4 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
-                  else if (insights.insight5 == null)
-                      insights.insight5 = "Answer ${i} matches more than ${Math.round(maxMatch * 100)}% with answers of ${printInsights(matchedUsers,matchedRollNumbers)}"
-                 }
-          }
-          submitAssignment.insights = insights
-          submitAssignmentRepository.save(submitAssignment)
-      }
-        insights
+            }else{
+                def assignmentid= submitAssignment.tempassignmentid.replace('-'+submitAssignment ?. email,'')
+                def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
+                def validList = getValidityOfQuestion(assignment,submitAssignment.email)
+                def correctCount = getCorrectAnswers(submitAssignment.userValidity,validList)
+                insights.insight1 = "Total number of correct answers ${correctCount}/${validList.size()}"
+            }
+             submitAssignment.insights = insights
+             submitAssignmentRepository.save(submitAssignment)
+            }
+        return  insights
+    }
+
+    int getCorrectAnswers(List<int[]> userValidity, List<int[]> validity) {
+        int correctCount = 0;
+        for(int i=0;i<validity.size();i++){
+            if(validity[i]==userValidity[i]){
+                correctCount+=1;
+            }
+        }
+        return correctCount;
+    }
+
+     List<int[]> getValidityOfQuestion(CreateAssignment createAssignment, String email) {
+        def validityList = []
+        def randList = createAssignment.studentQuestionMapping.get(email)
+        (0..createAssignment.numberOfQuesPerStudent - 1).each {
+            int randNum = randList.get(it).toString().toInteger()
+            validityList << createAssignment.validity[randNum]
+        }
+        validityList
     }
 
     double getThreshold(SubmitAssignment submitAssignment){

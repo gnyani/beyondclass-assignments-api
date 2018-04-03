@@ -60,4 +60,10 @@ class SaveCreateAssignment {
 
     @JsonProperty
     List<String []> outputs
+
+    @JsonProperty
+    List<String[]> options;
+
+    @JsonProperty
+    List<int[]> validity;
 }

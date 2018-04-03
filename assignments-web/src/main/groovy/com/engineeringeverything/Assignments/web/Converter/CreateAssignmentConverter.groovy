@@ -17,6 +17,8 @@ class CreateAssignmentConverter {
             assignmentType = createAssignment.assignmentType
             inputs = createAssignment.inputs
             outputs = createAssignment.outputs
+            options = createAssignment.options
+            validity = createAssignment.validity
         }
         createAssignmentResponse
     }

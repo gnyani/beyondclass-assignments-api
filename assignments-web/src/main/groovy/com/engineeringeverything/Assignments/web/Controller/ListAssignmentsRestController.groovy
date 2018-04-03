@@ -6,11 +6,13 @@ import api.evaluateassignment.AssignmentQuestionsAndAnswers
 import api.evaluateassignment.AssignmentSubmissionDetails
 import api.saveassignment.ReturnSavedAssignment
 import api.saveassignment.SaveAssignment
+import api.saveassignment.SaveObjectiveAssignment
 import api.saveassignment.SaveProgrammingAssignment
 import api.submitassignment.SubmitAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveCreateAssignmentRepository
+import com.engineeringeverything.Assignments.core.Repositories.SaveObjectiveAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveProgrammingAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.UserRepository
@@ -57,6 +59,9 @@ class ListAssignmentsRestController {
 
     @Autowired
     CreateAssignmentConverter createAssignmentConverter
+
+    @Autowired
+    SaveObjectiveAssignmentRepository saveObjectiveAssignmentRepository
 
     @ResponseBody
     @PostMapping(value = '/teacher/list')
@@ -122,14 +127,15 @@ class ListAssignmentsRestController {
     @ResponseBody
     @PostMapping(value = '/get/{assignmentId:.+}')
     public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId,@RequestBody String email){
+
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
+
         Boolean valid = isValidSubmission(assignment,email)
         if(valid) {
             ReturnSavedAssignment returnSavedAssignment = new ReturnSavedAssignment()
-            returnSavedAssignment.setAssignmentType(assignment.assignmentType)
             Object[] questions = genrateRandomQuestionsForStudent(assignment, email)
             returnSavedAssignment.setQuestions(questions)
-
+            returnSavedAssignment.setAssignmentType(assignment?.assignmentType)
             if (assignment.assignmentType == AssignmentType.THEORY) {
                 SaveAssignment saveAssignment = saveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
                 returnSavedAssignment.setAnswers(saveAssignment?.answers)
@@ -137,6 +143,7 @@ class ListAssignmentsRestController {
                     returnSavedAssignment.setTimespent(saveAssignment?.timespent)
                 return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
             } else if (assignment.assignmentType == AssignmentType.CODING) {
+
                 SaveProgrammingAssignment saveProgrammingAssignment = saveProgrammingAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
                 returnSavedAssignment.setSource(saveProgrammingAssignment?.source)
                 returnSavedAssignment.setLanguage(saveProgrammingAssignment?.language)
@@ -144,13 +151,17 @@ class ListAssignmentsRestController {
                 if (saveProgrammingAssignment?.timespent != null)
                     returnSavedAssignment.setTimespent(saveProgrammingAssignment?.timespent)
                 return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
+            } else if (assignment.assignmentType == AssignmentType.OBJECTIVE) {
+                SaveObjectiveAssignment saveObjectiveAssignment = saveObjectiveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
+                returnSavedAssignment.setUserValidity(saveObjectiveAssignment?.getUserValidity())
+                returnSavedAssignment.setOptions(getOptionsOfQuestion(assignment,email))
+                returnSavedAssignment.setValidity(getValidityOfQuestion(assignment,email))
+                if (saveObjectiveAssignment?.getTimespent() != null)
+                    returnSavedAssignment.setTimespent(saveObjectiveAssignment.getTimespent())
+                return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
             }
-        }  else{
-            return  new ResponseEntity<>("You might have already submitted the assignment",HttpStatus.FORBIDDEN)
         }
     }
-
-
 
     @ResponseBody
     @PostMapping(value = '/evaluate')
@@ -170,6 +181,10 @@ class ListAssignmentsRestController {
             submittedQuestions = questions
             userName = user ?. firstName ?. capitalize() +' '+user ?. lastName ?. capitalize()
             rollNumber = user.rollNumber
+        }
+        if(createAssignment1.assignmentType == AssignmentType.OBJECTIVE){
+            assignmentQuestionsAndAnswers.createAssignment.options = getOptionsOfQuestion(createAssignment1, assignmentSubmissionDetails.email)
+            assignmentQuestionsAndAnswers.createAssignment.validity = getValidityOfQuestion(createAssignment1, assignmentSubmissionDetails.email)
         }
         createAssignment1 && submitAssignment1 ? new ResponseEntity<>(assignmentQuestionsAndAnswers,HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
 
@@ -221,7 +236,6 @@ class ListAssignmentsRestController {
 
             createAssignmentRepository.save(createAssignment)
         }
-
      questions
     }
 
@@ -233,6 +247,26 @@ class ListAssignmentsRestController {
             questionList << createAssignment.questions[randNum]
         }
         questionList
+    }
+
+    private List<String[]> getOptionsOfQuestion(CreateAssignment createAssignment, String email) {
+        def optionsList = []
+        def randList = createAssignment.studentQuestionMapping.get(email)
+        (0..createAssignment.numberOfQuesPerStudent - 1).each {
+            int randNum = randList.get(it).toString().toInteger()
+            optionsList << createAssignment.options[randNum]
+        }
+        optionsList
+    }
+
+    private List<int[]> getValidityOfQuestion(CreateAssignment createAssignment, String email) {
+        def validityList = []
+        def randList = createAssignment.studentQuestionMapping.get(email)
+        (0..createAssignment.numberOfQuesPerStudent - 1).each {
+            int randNum = randList.get(it).toString().toInteger()
+            validityList << createAssignment.validity[randNum]
+        }
+        validityList
     }
 
     private Boolean isValidSubmission(CreateAssignment assignment, String email){

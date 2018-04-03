@@ -88,10 +88,13 @@ class CreateAssignmentRestController {
 
             createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
                 section,startyear,endyear,createAssignment.email,createAssignment.subject,time))
-        else
+        else if(createAssignment.assignmentType == AssignmentType.CODING)
 
             createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
                     section,startyear,endyear,createAssignment.email,time))
+        else
+            createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
+                    section,startyear,endyear,createAssignment.email,createAssignment.subject,time))
 
         def assignment = createAssignmentRepository.save(createAssignment)
         if(assignment) {
@@ -151,7 +154,7 @@ class CreateAssignmentRestController {
         }
 
         if(saveCreateAssignment1 == null)
-            if(saveCreateAssignment.assignmentType == AssignmentType.THEORY)
+            if(saveCreateAssignment.assignmentType == AssignmentType.THEORY || saveCreateAssignment.assignmentType == AssignmentType.OBJECTIVE)
 
                 saveCreateAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
                         section,startyear,endyear,saveCreateAssignment.email,saveCreateAssignment.subject,time))
@@ -199,6 +202,12 @@ class CreateAssignmentRestController {
             createAssignment.message = updatedAssignment.message
             createAssignment.inputs = updatedAssignment.inputs
             createAssignment.outputs = updatedAssignment.outputs
+        }else if(updatedAssignment.assignmentType == AssignmentType.OBJECTIVE){
+            createAssignment.questions = updatedAssignment.questions
+            createAssignment.lastdate = updatedAssignment.lastdate
+            createAssignment.message = updatedAssignment.message
+            createAssignment.options = updatedAssignment.options
+            createAssignment.validity = updatedAssignment.validity
         }
         def newAssignment = createAssignmentRepository.save(createAssignment)
         newAssignment ? new ResponseEntity<?>("Update success",HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
