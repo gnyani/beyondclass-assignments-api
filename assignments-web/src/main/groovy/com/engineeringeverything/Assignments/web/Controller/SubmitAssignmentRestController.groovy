@@ -49,7 +49,7 @@ class SubmitAssignmentRestController {
 
     @ResponseBody
     @PostMapping(value = '/student/submit')
-    public ResponseEntity<?> tempSaveAssignment(@RequestBody SubmitAssignment submitAssignment){
+    public ResponseEntity<?> submitAssignment(@RequestBody SubmitAssignment submitAssignment){
         def user = serviceUtilities.findUserByEmail(submitAssignment.email)
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(submitAssignment.tempassignmentid)
         submitAssignment.setTempassignmentid(serviceUtilities.generateFileName(submitAssignment.tempassignmentid,submitAssignment.email))

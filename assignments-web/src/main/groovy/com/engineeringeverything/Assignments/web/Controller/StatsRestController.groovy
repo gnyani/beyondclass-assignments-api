@@ -1,8 +1,6 @@
 package com.engineeringeverything.Assignments.web.Controller
 
 import api.createassignment.CreateAssignment
-import api.submitassignment.SubmitAssignmentResponse
-import api.submitassignment.SubmitProgrammingAssignmentRequest
 import api.stats.StudentSubmissionStats
 import api.stats.TeacherAssignmentStats
 import api.submitassignment.AssignmentSubmissionStatus
