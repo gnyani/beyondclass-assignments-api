@@ -27,7 +27,7 @@ class SaveObjectiveAssignment {
 
 
     @JsonProperty
-    List<int[]> userValidity
+    List<int[]> userValidity = new ArrayList<int[]>()
 
     @JsonProperty
     @NotEmpty

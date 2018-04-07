@@ -153,7 +153,23 @@ class ListAssignmentsRestController {
                 return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
             } else if (assignment.assignmentType == AssignmentType.OBJECTIVE) {
                 SaveObjectiveAssignment saveObjectiveAssignment = saveObjectiveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
-                returnSavedAssignment.setUserValidity(saveObjectiveAssignment?.getUserValidity())
+
+                //This is very wierd hack to escape the temporary objective assignment save issue.
+                def list = []
+                saveObjectiveAssignment.getUserValidity().each {
+                    if(it != null){
+                        if(it.size() == 0){
+                            println()
+                            list.push(null)
+                        }else{
+                            list.push(it)
+                        }
+                    }else{
+                        list.push(it)
+                    }
+                }
+
+                returnSavedAssignment.setUserValidity(list)
                 returnSavedAssignment.setOptions(getOptionsOfQuestion(assignment,email))
                 returnSavedAssignment.setValidity(getValidityOfQuestion(assignment,email))
                 if (saveObjectiveAssignment?.getTimespent() != null)
