@@ -43,7 +43,7 @@ class SubmitAssignment {
     @JsonProperty
     @NotEmpty
     @NotNull
-    List<int[]> userValidity;
+    List<ArrayList> userValidity;
 
     @JsonProperty
     @NotEmpty
