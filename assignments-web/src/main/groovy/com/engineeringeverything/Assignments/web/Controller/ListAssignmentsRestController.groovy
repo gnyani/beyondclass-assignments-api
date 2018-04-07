@@ -155,21 +155,26 @@ class ListAssignmentsRestController {
                 SaveObjectiveAssignment saveObjectiveAssignment = saveObjectiveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
 
                 //This is very wierd hack to escape the temporary objective assignment save issue.
-                def list = []
-                saveObjectiveAssignment.getUserValidity().each {
-                    if(it != null){
-                        if(it.size() == 0){
-                            println()
-                            list.push(null)
+                if(saveObjectiveAssignment){
+
+                    def list = []
+                    saveObjectiveAssignment.getUserValidity().each {
+                        if(it != null){
+                            if(it.size() == 0){
+                                println()
+                                list.push(null)
+                            }else{
+                                list.push(it)
+                            }
                         }else{
                             list.push(it)
                         }
-                    }else{
-                        list.push(it)
                     }
-                }
 
-                returnSavedAssignment.setUserValidity(list)
+                    returnSavedAssignment.setUserValidity(list)
+                }else{
+                    returnSavedAssignment.setUserValidity(null)
+                }
                 returnSavedAssignment.setOptions(getOptionsOfQuestion(assignment,email))
                 returnSavedAssignment.setValidity(getValidityOfQuestion(assignment,email))
                 if (saveObjectiveAssignment?.getTimespent() != null)
