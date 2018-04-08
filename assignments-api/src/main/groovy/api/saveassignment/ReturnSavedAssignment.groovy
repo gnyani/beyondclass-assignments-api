@@ -17,7 +17,7 @@ class ReturnSavedAssignment {
 
     List<int[]> validity
 
-    List<int[]> userValidity
+    List<ArrayList> userValidity
 
     String[] language
 
