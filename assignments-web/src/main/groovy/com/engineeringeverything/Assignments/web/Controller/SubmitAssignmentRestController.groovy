@@ -1,6 +1,7 @@
 package com.engineeringeverything.Assignments.web.Controller
 
 import api.createassignment.CreateAssignment
+import api.insights.Insights
 import api.submitassignment.AssignmentSubmissionStatus
 import api.submitassignment.SubmitAssignment
 import api.submitassignment.UpdateAssignmentStatus
@@ -65,6 +66,7 @@ class SubmitAssignmentRestController {
             submitAssignment.setStatus(AssignmentSubmissionStatus.ACCEPTED);
             user.setPoints((user.points ? user.points : 0) + marks)
             userRepository.save(user)
+            submitAssignment.insights = generateObjectiveInsights(submitAssignment)
         }
         SubmitAssignment submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
         def currentSubmittedStudents =  createAssignment.getSubmittedstudents()
@@ -94,6 +96,27 @@ class SubmitAssignmentRestController {
             }
         }
         return (correctCount/validity.size())* 5;
+    }
+
+    Insights generateObjectiveInsights(SubmitAssignment submitAssignment){
+        Insights insights = new Insights()
+        def assignmentid= submitAssignment.tempassignmentid.replace('-'+submitAssignment ?. email,'')
+        def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
+        def validList = getValidityOfQuestion(assignment,submitAssignment.email)
+        def correctCount = getCorrectAnswers(submitAssignment.userValidity,validList)
+        insights.insight1 = "Total number of correct answers ${correctCount}/${validList.size()}"
+
+        insights
+    }
+
+    int getCorrectAnswers(List<int[]> userValidity, List<int[]> validity) {
+        int correctCount = 0;
+        for(int i=0;i<validity.size();i++){
+            if(validity[i]==userValidity[i]){
+                correctCount+=1;
+            }
+        }
+        return correctCount;
     }
 
     @PostMapping(value = '/update/evaluation/{submissionid:.+}')
