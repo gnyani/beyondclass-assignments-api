@@ -96,7 +96,7 @@ class SubmitAssignment {
                     .append(',').append(insights)
         }else if(codingAssignmentResponse == null && userValidity != null) {
             stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(formatDuration(timespent)).append(',').append(marksGiven)
-                    .append(',').append(insights.insight1)
+                    .append(',').append(insights?.insight1)
         }else {
             stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(formatDuration(timespent))
                     .append(',').append(marksGiven).append(',').append(insights)
