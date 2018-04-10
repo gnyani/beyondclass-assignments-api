@@ -97,11 +97,27 @@ class InsightRestController {
                     }
                 }
 
+            }else{
+                def assignmentid= submitAssignment.tempassignmentid.replace('-'+submitAssignment ?. email,'')
+                def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
+                def validList = getValidityOfQuestion(assignment,submitAssignment.email)
+                def correctCount = getCorrectAnswers(submitAssignment.userValidity,validList)
+                insights.insight1 = "Total number of correct answers ${correctCount}/${validList.size()}"
             }
              submitAssignment.insights = insights
              submitAssignmentRepository.save(submitAssignment)
             }
         return  insights
+    }
+
+    int getCorrectAnswers(List<int[]> userValidity, List<int[]> validity) {
+        int correctCount = 0;
+        for(int i=0;i<validity.size();i++){
+            if(validity[i]==userValidity[i]){
+                correctCount+=1;
+            }
+        }
+        return correctCount;
     }
 
      List<int[]> getValidityOfQuestion(CreateAssignment createAssignment, String email) {
