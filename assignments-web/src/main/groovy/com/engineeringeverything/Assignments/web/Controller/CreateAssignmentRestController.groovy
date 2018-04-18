@@ -214,6 +214,15 @@ class CreateAssignmentRestController {
     }
 
     @ResponseBody
+    @PostMapping(value = 'teacher/activate/{assignmentId:.+}')
+    public ResponseEntity<?> activateAssignment(@PathVariable(value="assignmentId", required = true) String assignmentId,@RequestBody String email){
+        CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
+        createAssignment?.submittedstudents?.remove(email)
+        def updatedAssignment = createAssignmentRepository.save(createAssignment)
+        updatedAssignment ? new ResponseEntity<?>("Success",HttpStatus.OK) : new ResponseEntity<?>("Not Found",HttpStatus.NO_CONTENT)
+    }
+
+    @ResponseBody
     @PostMapping(value = '/teacher/notify')
     public ResponseEntity<?> notifyStudents(@RequestBody ReminderNotifier reminderNotifier){
         Boolean notifynow = false
