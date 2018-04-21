@@ -12,12 +12,19 @@ import com.engineeringeverything.Assignments.core.Repositories.SaveCreateAssignm
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.UserRepository
 import com.engineeringeverything.Assignments.core.Service.EmailUtils
+import com.engineeringeverything.Assignments.core.Service.GetQuestions
 import com.engineeringeverything.Assignments.core.Service.MailService
 import com.engineeringeverything.Assignments.core.Service.NotificationService
+import com.engineeringeverything.Assignments.core.Service.PDFGenerator
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import com.engineeringeverything.Assignments.core.constants.EmailTypes
 import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
+
+import javax.servlet.http.HttpServletResponse
+import java.nio.file.Files
+import java.nio.file.Path
 
 import static groovyx.gpars.dataflow.Dataflow.task
 import org.springframework.http.HttpStatus
@@ -49,10 +56,16 @@ class CreateAssignmentRestController {
     EmailUtils emailUtils
 
     @Autowired
+    GetQuestions getQuestions
+
+    @Autowired
     UserRepository userRepository
 
     @Autowired
     MailService mailService
+
+    @Autowired
+    PDFGenerator pdfGenerator
 
     @Autowired
     SaveCreateAssignmentRepository saveCreateAssignmentRepository
@@ -63,14 +76,6 @@ class CreateAssignmentRestController {
     @Autowired
     SubmitAssignmentRepository submitAssignmentRepository
 
-//    @GetMapping("/mailService")
-//    public ResponseEntity<?> sendMail(){
-//        List<String> mail = new ArrayList<>();
-//        mail.add("gnyani007@gmail.com")
-//
-//        mailService.sendHtmlMail((String[])mail.toArray(),"helloworld","<h1>this is manoj</h1>");
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
 
     @ResponseBody
     @PostMapping(value = '/create')
@@ -168,6 +173,23 @@ class CreateAssignmentRestController {
         SaveCreateAssignment savedAssignment = saveCreateAssignmentRepository.save(saveCreateAssignment)
 
         savedAssignment ? new ResponseEntity<>("Assignment got saved successfully",HttpStatus.OK) : new ResponseEntity<>("Sorry something is not right",HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    @ResponseBody
+    @GetMapping(value="/get/questions/{assignmentId:.+}",produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<?> getQuestions(@PathVariable(value="assignmentId" , required = true) String assignmentId,HttpServletResponse response){
+
+        Path questionsPDF = getQuestions.parseQuestionsAndGeneratePDF(assignmentId)
+
+        byte[] file = Files.readAllBytes(questionsPDF)
+
+        response.setContentType("application/pdf;charset=UTF-8");
+        response.setHeader("Content-disposition",
+                "inline; filename=\"" + assignmentId+'.pdf' + "\"");
+
+        Files.delete(questionsPDF)
+
+        file? new ResponseEntity<>(file,HttpStatus.OK) : new ResponseEntity<>("wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
     @ResponseBody
     @GetMapping(value = '/teacher/get/{assignmentId:.+}')

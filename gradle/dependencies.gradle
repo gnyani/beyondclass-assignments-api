@@ -9,6 +9,7 @@ versions += [
         oauth                    : "1.2.1.RELEASE",
         sendGrid                 : "2.2.2",
         gpars                    : "1.2.1",
+        iTextPdf                 : "5.0.6",
 
 ]
 libs+=[
@@ -28,4 +29,5 @@ libs+=[
         groovyx                     : [group: 'org.codehaus.groovy.modules.http-builder', module: 'http-builder', version:'0.6'],
         sendGrid                    : [group: 'com.sendgrid', name: 'sendgrid-java', version: "${versions.sendGrid}"],
         gpars                       : [group: 'org.codehaus.gpars', name: 'gpars', version: "${versions.gpars}"],
+        iTextPdf                    : [group: 'com.itextpdf', name: 'itextpdf', version: "${versions.iTextPdf}"]
 ]

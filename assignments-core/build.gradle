@@ -11,5 +11,6 @@ dependencies {
     compile(libs.springBootStarterTest)
     compile(libs.springBootParent)
     compile(libs.sendGrid)
+    compile(libs.iTextPdf)
     testCompile (libs.junit)
 }
