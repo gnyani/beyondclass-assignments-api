@@ -58,7 +58,7 @@ public class PDFGenerator {
         addEmptyLine(preface, 1)
         preface.add(new Paragraph("List Of Questions", smallBold))
         addEmptyLine(preface, 3)
-        List list = new List(true, false, 10)
+        List list = new List(true, false, 30)
         questions.each{
             list.add(new ListItem("${it}"));
         }
