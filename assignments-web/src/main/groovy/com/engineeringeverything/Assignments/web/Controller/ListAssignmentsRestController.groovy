@@ -16,17 +16,25 @@ import com.engineeringeverything.Assignments.core.Repositories.SaveObjectiveAssi
 import com.engineeringeverything.Assignments.core.Repositories.SaveProgrammingAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.UserRepository
+import com.engineeringeverything.Assignments.core.Service.GetQuestions
+import com.engineeringeverything.Assignments.core.Service.PDFGenerator
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
-import com.engineeringeverything.Assignments.web.Converter.CreateAssignmentConverter
+import com.engineeringeverything.Assignments.web.Converter.ObjectConverter
 import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+
+import javax.servlet.http.HttpServletResponse
+import java.nio.file.Files
+import java.nio.file.Path
 
 
 /**
@@ -58,7 +66,13 @@ class ListAssignmentsRestController {
     SaveCreateAssignmentRepository saveCreateAssignmentRepository
 
     @Autowired
-    CreateAssignmentConverter createAssignmentConverter
+    ObjectConverter createAssignmentConverter
+
+    @Autowired
+    PDFGenerator pdfGenerator
+
+    @Autowired
+    GetQuestions getQuestions
 
     @Autowired
     SaveObjectiveAssignmentRepository saveObjectiveAssignmentRepository
@@ -165,29 +179,61 @@ class ListAssignmentsRestController {
 
     @ResponseBody
     @PostMapping(value = '/evaluate')
-    public ResponseEntity<?> fetchQuestionsAndAnswers(@RequestBody AssignmentSubmissionDetails assignmentSubmissionDetails ){
+    public ResponseEntity<?> evaluate(@RequestBody AssignmentSubmissionDetails assignmentSubmissionDetails ){
 
+        def (AssignmentQuestionsAndAnswers assignmentQuestionsAndAnswers, CreateAssignment createAssignment1, SubmitAssignment submitAssignment1) = fetchQuestionsAndAnswers(assignmentSubmissionDetails)
+        createAssignment1 && submitAssignment1 ? new ResponseEntity<>(assignmentQuestionsAndAnswers,HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
+
+    }
+
+    private List fetchQuestionsAndAnswers(AssignmentSubmissionDetails assignmentSubmissionDetails) {
         AssignmentQuestionsAndAnswers assignmentQuestionsAndAnswers = new AssignmentQuestionsAndAnswers()
         CreateAssignment createAssignment1 = createAssignmentRepository.findByAssignmentid(assignmentSubmissionDetails.assignmentid)
-        SubmitAssignment submitAssignment1 =  submitAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentSubmissionDetails.assignmentid,assignmentSubmissionDetails.email))
+        SubmitAssignment submitAssignment1 = submitAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentSubmissionDetails.assignmentid, assignmentSubmissionDetails.email))
 
-        def  user  =  userRepository.findByEmail(assignmentSubmissionDetails.email)
-        def  questions = getQuestionsOfStudent(createAssignment1,assignmentSubmissionDetails.email)
+        def user = userRepository.findByEmail(assignmentSubmissionDetails.email)
+        def questions = getQuestionsOfStudent(createAssignment1, assignmentSubmissionDetails.email)
 
         assignmentQuestionsAndAnswers.with {
             createAssignment = createAssignmentConverter.convertToCreateAssignmentResponse(createAssignment1)
             submitAssignment = submitAssignment1
             timespent = formatDuration(submitAssignment1.timespent)
             submittedQuestions = questions
-            userName = user ?. firstName ?. capitalize() +' '+user ?. lastName ?. capitalize()
+            userName = user?.firstName?.capitalize() + ' ' + user?.lastName?.capitalize()
             rollNumber = user.rollNumber
         }
-        if(createAssignment1.assignmentType == AssignmentType.OBJECTIVE){
+        if (createAssignment1.assignmentType == AssignmentType.OBJECTIVE) {
             assignmentQuestionsAndAnswers.createAssignment.options = getOptionsOfQuestion(createAssignment1, assignmentSubmissionDetails.email)
             assignmentQuestionsAndAnswers.createAssignment.validity = getValidityOfQuestion(createAssignment1, assignmentSubmissionDetails.email)
         }
-        createAssignment1 && submitAssignment1 ? new ResponseEntity<>(assignmentQuestionsAndAnswers,HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)
+        [assignmentQuestionsAndAnswers, createAssignment1, submitAssignment1]
+    }
 
+    @ResponseBody
+    @GetMapping(value = '/get/submission/{submissionId:.+}',produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<?> generateSubmissionPDF(@PathVariable(value="submissionId" , required = true) String submissionId,HttpServletResponse response) {
+
+        AssignmentSubmissionDetails assignmentSubmissionDetails = new AssignmentSubmissionDetails()
+
+        def splits = submissionId.tokenize('*')
+        assignmentSubmissionDetails.with {
+            assignmentid = splits[0]
+            email = splits[1]
+        }
+
+        def (AssignmentQuestionsAndAnswers assignmentQuestionsAndAnswers) = fetchQuestionsAndAnswers(assignmentSubmissionDetails)
+        assignmentQuestionsAndAnswers.submittedQuestions = getQuestions.parseQuestions(assignmentQuestionsAndAnswers.submittedQuestions)
+
+        Path submissionPDF = pdfGenerator.createSubmissionPDF(assignmentQuestionsAndAnswers)
+        byte[] file = Files.readAllBytes(submissionPDF)
+
+        response.setContentType("application/pdf;charset=UTF-8");
+        response.setHeader("Content-disposition",
+                "inline; filename=\"" + assignmentQuestionsAndAnswers.userName+'('+assignmentQuestionsAndAnswers.rollNumber+')'+'submission.pdf' + "\"")
+
+        Files.delete(submissionPDF)
+
+        file? new ResponseEntity<>(file,HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     public static String formatDuration(long millis) {

@@ -18,4 +18,6 @@ class CreateAssignmentResponse {
     List<String []> options
 
     List<int []> validity
+
+    String subject
 }

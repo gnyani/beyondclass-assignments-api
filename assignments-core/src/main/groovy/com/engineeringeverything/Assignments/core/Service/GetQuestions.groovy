@@ -20,7 +20,7 @@ class GetQuestions {
 
     Path parseQuestionsAndGeneratePDF(String assignmentId){
 
-        List questions = parseQuestions(assignmentId)
+        List questions = parseQuestionsFromId(assignmentId)
 
         Path pdfPath = generatePDF(assignmentId, questions)
 
@@ -28,7 +28,7 @@ class GetQuestions {
     }
 
 
-    public List parseQuestions(String assignmentId){
+    public List parseQuestionsFromId(String assignmentId){
 
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
 
@@ -46,10 +46,24 @@ class GetQuestions {
         questions
     }
 
+    public List parseQuestions(Object[] questions){
+        final List parsedQuestions = []
+        questions.each {
+            StringBuilder stringBuilder = new StringBuilder()
+            Object blocks = it.blocks
+            blocks.each{
+                stringBuilder.append(it.text).append('\n')
+            }
+            parsedQuestions.add(stringBuilder.toString())
+        }
+        println("Prasing questions from content state")
+        parsedQuestions
+    }
+
     Path generatePDF(String assignmentId, List questions){
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
         println("Generating PDF of questions")
-        def filePath = pdfGenerator.createPDF(createAssignment.email, createAssignment.subject, questions)
+        def filePath = pdfGenerator.createPDF(createAssignment.email, createAssignment.subject, questions, createAssignment.options, createAssignment.validity)
         println("Done")
         filePath
     }

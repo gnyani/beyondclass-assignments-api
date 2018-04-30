@@ -95,7 +95,8 @@ class SubmitAssignmentRestController {
                 correctCount+=1;
             }
         }
-        return (correctCount/validity.size())* 5;
+        println("correctcount is ${correctCount} and validity is ${validity.size()}")
+        return Math.round(correctCount/validity.size()*100)/100* 5;
     }
 
     Insights generateObjectiveInsights(SubmitAssignment submitAssignment){

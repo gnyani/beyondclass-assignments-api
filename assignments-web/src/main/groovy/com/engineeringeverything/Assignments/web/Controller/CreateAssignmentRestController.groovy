@@ -5,6 +5,7 @@ import api.createassignment.SaveCreateAssignment
 import api.createassignment.UpdateCreateAssignment
 import api.notifications.Notifications
 import api.notifications.ReminderNotifier
+import api.submitassignment.SubmitAssignment
 import api.user.User
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.ReminderNotifierRepository
@@ -18,6 +19,7 @@ import com.engineeringeverything.Assignments.core.Service.NotificationService
 import com.engineeringeverything.Assignments.core.Service.PDFGenerator
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import com.engineeringeverything.Assignments.core.constants.EmailTypes
+import com.engineeringeverything.Assignments.web.Converter.ObjectConverter
 import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -76,6 +78,8 @@ class CreateAssignmentRestController {
     @Autowired
     SubmitAssignmentRepository submitAssignmentRepository
 
+    @Autowired
+    ObjectConverter createAssignmentConverter
 
     @ResponseBody
     @PostMapping(value = '/create')
@@ -241,6 +245,12 @@ class CreateAssignmentRestController {
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
         createAssignment?.submittedstudents?.remove(email)
         def updatedAssignment = createAssignmentRepository.save(createAssignment)
+        SubmitAssignment submitAssignment = submitAssignmentRepository.findByTempassignmentid(ServiceUtilities.generateFileName(assignmentId, email))
+        if(submitAssignment.marksGiven != null && submitAssignment.marksGiven > 0){
+            User user = userRepository.findByEmail(email)
+            user.points = user.points - submitAssignment.marksGiven
+            userRepository.save(user)
+        }
         updatedAssignment ? new ResponseEntity<?>("Success",HttpStatus.OK) : new ResponseEntity<?>("Not Found",HttpStatus.NO_CONTENT)
     }
 
@@ -303,6 +313,32 @@ class CreateAssignmentRestController {
         }else{
             new ResponseEntity<?>("Not Allowed to Notify now",HttpStatus.NOT_ACCEPTABLE)
         }
+    }
+
+    @ResponseBody
+    @PostMapping(value = '/teacher/duplicate/{assignmentId:.+}',produces = 'application/json')
+    ResponseEntity <?> duplicateAssignment(@PathVariable(value="assignmentId", required = true) String assignmentId,@RequestBody String batch){
+        def refAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
+
+        def refSavedAssignment = createAssignmentConverter.convertToSaveCreateAssignment(refAssignment)
+
+        def batchSplit =  batch.split('-')
+        String startYear = batchSplit[0]
+        String endYear = Integer.parseInt(startYear)+4
+
+        String refId = refSavedAssignment.assignmentid
+        String olderBatch = refId.substring(ServiceUtilities.ordinalIndexOf(refId,'-',3)+1,ServiceUtilities.ordinalIndexOf(refId,'-',6))
+        String newId = refId.replace(olderBatch,ServiceUtilities.generateFileName(batchSplit[1], startYear, endYear))
+
+        String oldTime = refId.substring(refId.lastIndexOf('-')+1)
+        String newIdWithTime = newId.replace(oldTime,System.currentTimeMillis().toString())
+
+        println("Old id is ${refId} new id is ${newIdWithTime}")
+        refSavedAssignment.assignmentid = newIdWithTime
+        refSavedAssignment.batch = batch
+
+        def newAssignment = saveCreateAssignmentRepository.save(refSavedAssignment)
+        newAssignment ? new ResponseEntity<?>(newAssignment,HttpStatus.CREATED) : new ResponseEntity<?>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     void findUsersAndSendEmail(String classId,EmailTypes emailTypes,String sender,String assignmentId){
