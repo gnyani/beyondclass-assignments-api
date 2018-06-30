@@ -89,4 +89,14 @@ class ServiceUtilities {
             pos = str.indexOf(substr, pos + 1)
         return pos;
     }
+
+    public String generateUniqueClassIdForTeacher( String batch, String email) {
+        def splits = batch.split('-')
+        String startyear = splits[0]
+        String section = splits[1]
+        String endyear = Integer.parseInt(startyear) + 4
+        def user = findUserByEmail(email)
+        def uniqueClassId = generateFileName(user.university, user.college, user.branch, section, startyear, endyear)
+        uniqueClassId
+    }
 }

@@ -9,6 +9,7 @@ import api.saveassignment.SaveAssignment
 import api.saveassignment.SaveObjectiveAssignment
 import api.saveassignment.SaveProgrammingAssignment
 import api.submitassignment.SubmitAssignment
+import api.user.User
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveAssignmentRepository
 import com.engineeringeverything.Assignments.core.Repositories.SaveCreateAssignmentRepository
@@ -81,13 +82,9 @@ class ListAssignmentsRestController {
     @PostMapping(value = '/teacher/list')
     public ResponseEntity<?> listAssignments (@RequestBody TeacherAssignmentList teacherAssignmentList){
 
-        def splits = teacherAssignmentList.batch.split('-')
-        String startyear = splits[0]
-        String section = splits[1]
-        String endyear = Integer.parseInt(startyear)+ 4
-        def user = serviceUtilities.findUserByEmail(teacherAssignmentList.email)
+        def uniqueClassId = serviceUtilities.generateUniqueClassIdForTeacher(teacherAssignmentList.batch, teacherAssignmentList.email)
 
-        def assignmentid = serviceUtilities.generateFileName(user.university,user.college,user.branch,section,startyear,endyear,teacherAssignmentList.email)
+        def assignmentid = serviceUtilities.generateFileName(uniqueClassId,teacherAssignmentList.email)
 
         def list = createAssignmentRepository.findByAssignmentidStartingWithOrderByCreateDateDesc(assignmentid)
 
@@ -99,6 +96,7 @@ class ListAssignmentsRestController {
 
         list ? new ResponseEntity<>(convertedList,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
     }
+
 
 
     @ResponseBody
@@ -113,12 +111,9 @@ class ListAssignmentsRestController {
     @ResponseBody
     @PostMapping(value = '/teacher/saved/list')
     public ResponseEntity<?> listSavedAssignments (@RequestBody TeacherAssignmentList teacherAssignmentList){
-        def splits = teacherAssignmentList.batch.split('-')
-        String startyear = splits[0]
-        String section = splits[1]
-        String endyear = Integer.parseInt(startyear)+ 4
-        def user = serviceUtilities.findUserByEmail(teacherAssignmentList.email)
-        def assignmentid = serviceUtilities.generateFileName(user.university,user.college,user.branch,section,startyear,endyear,teacherAssignmentList.email)
+
+        def uniqueClassId = serviceUtilities.generateUniqueClassIdForTeacher(teacherAssignmentList.batch,teacherAssignmentList.email)
+        def assignmentid = serviceUtilities.generateFileName(uniqueClassId, teacherAssignmentList.email)
         def list = saveCreateAssignmentRepository.findByAssignmentidStartingWithOrderByCreateDateDesc(assignmentid)
         list ? new ResponseEntity<>(list,HttpStatus.OK): new ResponseEntity<>("no records found",HttpStatus.NO_CONTENT)
     }
