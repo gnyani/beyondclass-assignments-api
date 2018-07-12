@@ -46,7 +46,7 @@ class SaveSnippetController {
     @ResponseBody
     @PostMapping(value='/codeeditor/savedlist')
     public ResponseEntity<?> savedSnippetsList(@RequestBody String email){
-        def list = saveSnippetsRepository.findByEmail(email)
+        def list = saveSnippetsRepository.findByEmailOrderByDateDesc(email)
         list ? new ResponseEntity<?>(list,HttpStatus.OK) : new ResponseEntity<?>('no record founds',HttpStatus.NO_CONTENT)
     }
 

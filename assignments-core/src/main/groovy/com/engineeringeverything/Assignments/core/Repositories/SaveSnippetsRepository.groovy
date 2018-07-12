@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
  */
 interface SaveSnippetsRepository extends MongoRepository<SaveSnippet, String> {
 
-    List<SaveSnippet> findByEmail(String email)
+    List<SaveSnippet> findByEmailOrderByDateDesc(String email)
 
     Long deleteBySnippetid(String id)
 }
