@@ -9,6 +9,8 @@ class ReturnSavedAssignment {
 
     Object[] questions
 
+    Object[] answersContentStates
+
     String[] answers
 
     String[] source

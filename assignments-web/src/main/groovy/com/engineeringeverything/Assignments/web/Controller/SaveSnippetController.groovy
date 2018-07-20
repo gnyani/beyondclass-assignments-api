@@ -36,7 +36,7 @@ class SaveSnippetController {
         User user = userRepository.findByEmail(saveSnippet.email)
         saveSnippet.with{
             snippetid = serviceUtilities.generateFileName(user.uniqueclassid,email,Long.toString(System.currentTimeMillis()))
-            username = serviceUtilities.generateUserName(user)
+            postedUser = serviceUtilities.toUserDetails(user)
         }
 
         SaveSnippet savedSnippet =  saveSnippetsRepository.save(saveSnippet)

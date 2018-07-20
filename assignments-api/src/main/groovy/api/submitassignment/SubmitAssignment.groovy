@@ -50,6 +50,9 @@ class SubmitAssignment {
     @NotNull
     long timespent
 
+    @JsonProperty
+    Object[] answersContentStates
+
     String username
 
     String rollnumber

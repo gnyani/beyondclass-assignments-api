@@ -1,5 +1,6 @@
 package api.compiler
 
+import api.user.UserDetails
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.hibernate.validator.constraints.NotEmpty
 import org.springframework.data.annotation.Id
@@ -24,7 +25,7 @@ class SaveSnippet {
     @Indexed
     String email
 
-    String username
+    UserDetails postedUser
 
     Date date = new Date()
 

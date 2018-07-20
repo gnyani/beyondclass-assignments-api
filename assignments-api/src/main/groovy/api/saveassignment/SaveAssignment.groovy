@@ -32,5 +32,10 @@ class SaveAssignment {
     @JsonProperty
     @NotEmpty
     @NotNull
+    Object[] answersContentStates
+
+    @JsonProperty
+    @NotEmpty
+    @NotNull
     long timespent;
 }

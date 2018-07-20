@@ -148,6 +148,7 @@ class ListAssignmentsRestController {
             if (assignment.assignmentType == AssignmentType.THEORY) {
                 SaveAssignment saveAssignment = saveAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
                 returnSavedAssignment.setAnswers(saveAssignment?.answers)
+                returnSavedAssignment.setAnswersContentStates(saveAssignment ?.answersContentStates )
                 if (saveAssignment?.timespent != null)
                     returnSavedAssignment.setTimespent(saveAssignment?.timespent)
                 return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
@@ -170,6 +171,15 @@ class ListAssignmentsRestController {
                 return assignment ? new ResponseEntity<>(returnSavedAssignment, HttpStatus.OK) : new ResponseEntity<>("no records found", HttpStatus.NO_CONTENT)
             }
         }
+    }
+
+    @ResponseBody
+    @GetMapping(value = '/get/assignmenttype/{assignmentId:.+}')
+    public def getAssignmentType(@PathVariable(value="assignmentId" , required = true) String assignmentId){
+
+        CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
+
+        assignment ? new ResponseEntity<?>(assignment.assignmentType,HttpStatus.OK) : new ResponseEntity<?>("not found", HttpStatus.NO_CONTENT)
     }
 
     @ResponseBody
