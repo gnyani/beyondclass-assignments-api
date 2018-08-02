@@ -52,6 +52,8 @@ class SaveCreateAssignment {
     @JsonProperty
     AssignmentType assignmentType
 
+    Author author = new Author()
+
     @JsonProperty
     int numberOfQuesPerStudent
 

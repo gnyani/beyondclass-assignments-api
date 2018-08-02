@@ -1,5 +1,6 @@
 package com.engineeringeverything.Assignments.web.Controller
 
+import api.createassignment.Author
 import api.createassignment.CreateAssignment
 import api.createassignment.SaveCreateAssignment
 import api.createassignment.UpdateCreateAssignment
@@ -23,6 +24,7 @@ import com.engineeringeverything.Assignments.web.Converter.ObjectConverter
 import constants.AssignmentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.RequestParam
 
 import javax.servlet.http.HttpServletResponse
 import java.nio.file.Files
@@ -92,6 +94,8 @@ class CreateAssignmentRestController {
         String propicurl = user ?.normalpicUrl ?: user?.googlepicUrl
         createAssignment.setPropicurl(propicurl)
         String time = System.currentTimeMillis()
+        if(createAssignment.author.realOwner == null)
+        createAssignment.author.realOwner = serviceUtilities.toUserDetails(user)
 
         if(createAssignment.assignmentType == AssignmentType.THEORY)
 
@@ -171,9 +175,11 @@ class CreateAssignmentRestController {
 
                 saveCreateAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
                         section,startyear,endyear,saveCreateAssignment.email,time))
-        else
+        else{
             saveCreateAssignment.setAssignmentid(saveCreateAssignment1.assignmentid)
-
+            saveCreateAssignment.author.realOwner = saveCreateAssignment1.author.realOwner
+            saveCreateAssignment.author.questionSetReferenceId = saveCreateAssignment1.author.questionSetReferenceId
+        }
         SaveCreateAssignment savedAssignment = saveCreateAssignmentRepository.save(saveCreateAssignment)
 
         savedAssignment ? new ResponseEntity<>("Assignment got saved successfully",HttpStatus.OK) : new ResponseEntity<>("Sorry something is not right",HttpStatus.INTERNAL_SERVER_ERROR)
@@ -209,6 +215,21 @@ class CreateAssignmentRestController {
     public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId){
 
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
+
+        createAssignment ? new ResponseEntity<>(createAssignment,HttpStatus.OK) : new ResponseEntity<>("not found",HttpStatus.NOT_FOUND)
+    }
+
+    @ResponseBody
+    @GetMapping(value = '/teacher/get/assignment/publish/{assignmentId:.+}')
+    public ResponseEntity<?> fetchAssignmentForPublish(@PathVariable(value="assignmentId" , required = true) String assignmentId){
+
+        CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
+
+        if(createAssignment ?. author ?.realOwner  == null){
+            def user = serviceUtilities.findUserByEmail(createAssignment.email)
+
+            createAssignment ?. author ?.realOwner = serviceUtilities.toUserDetails(user)
+        }
 
         createAssignment ? new ResponseEntity<>(createAssignment,HttpStatus.OK) : new ResponseEntity<>("not found",HttpStatus.NOT_FOUND)
     }
@@ -317,9 +338,11 @@ class CreateAssignmentRestController {
 
     @ResponseBody
     @PostMapping(value = '/teacher/duplicate/{assignmentId:.+}',produces = 'application/json')
-    ResponseEntity <?> duplicateAssignment(@PathVariable(value="assignmentId", required = true) String assignmentId,@RequestBody String batch){
+    ResponseEntity <?> duplicateAssignment(@PathVariable(value="assignmentId", required = true) String assignmentId,@RequestBody String batch, @RequestParam(value = "questionsetid", required = false) String questionSetId){
         def refAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
-
+        if(questionSetId){
+            refAssignment.author.questionSetReferenceId = questionSetId
+        }
         def refSavedAssignment = createAssignmentConverter.convertToSaveCreateAssignment(refAssignment)
 
         def batchSplit =  batch.split('-')

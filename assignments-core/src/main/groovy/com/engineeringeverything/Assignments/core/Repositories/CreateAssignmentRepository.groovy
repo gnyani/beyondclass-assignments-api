@@ -13,6 +13,8 @@ interface CreateAssignmentRepository extends MongoRepository<CreateAssignment,St
     List<CreateAssignment> findByAssignmentidStartingWithAndSubmittedstudentsNotContainingAndLastdateAfterOrderByLastdate(String id, String email, Date date)
 
     CreateAssignment findByAssignmentid(String id)
+
+    List<CreateAssignment> findByAuthorQuestionSetReferenceId(String questionSetId)
     
     List<CreateAssignment> deleteByAssignmentid(String id)
 }

@@ -26,4 +26,6 @@ class ListCreateAssignment {
 
     AssignmentType assignmentType
 
+    Author author
+
 }

@@ -38,6 +38,7 @@ class ObjectConverter {
             subject = createAssignment.subject
             message = createAssignment.message
             lastdate = createAssignment.lastdate
+            author = createAssignment.author
         }
         listCreateAssignment
     }
@@ -59,6 +60,7 @@ class ObjectConverter {
             outputs = createAssignment.outputs
             options = createAssignment.options
             validity = createAssignment.validity
+            author = createAssignment ?. author
         }
         saveCreateAssignment
     }

@@ -10,19 +10,25 @@ import groovy.transform.TupleConstructor;
 @TupleConstructor
 public class UserDetails {
 
-     String email;
+     String email
 
-     String firstName;
+     String firstName
 
-     String lastName;
+     String lastName
 
-     String mobilenumber;
+     String mobilenumber
 
-     String userrole;
+     String userrole
 
-     String uniqueclassId;
+     String uniqueclassId
 
-     String googlepicUrl;
+     String googlepicUrl
 
-     String normalpicUrl;
+     String normalpicUrl
+
+     String college
+
+     String university
+
+     String branch
 }

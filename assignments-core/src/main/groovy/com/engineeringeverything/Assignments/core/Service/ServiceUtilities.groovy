@@ -70,6 +70,12 @@ class ServiceUtilities {
 
         userDetails.setNormalpicUrl(user ?. getNormalpicUrl())
 
+        userDetails.setCollege(user ?. getCollege())
+
+        userDetails.setUniversity(user ?. getUniversity())
+
+        userDetails.setBranch(user ?. getBranch())
+
         userDetails
     }
 

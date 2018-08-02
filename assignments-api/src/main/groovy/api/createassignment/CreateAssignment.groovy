@@ -1,5 +1,6 @@
 package api.createassignment
 
+import api.user.UserDetails
 import com.fasterxml.jackson.annotation.JsonProperty
 import constants.AssignmentType
 import groovy.transform.EqualsAndHashCode
@@ -10,7 +11,6 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 import javax.validation.constraints.NotNull
-import java.time.LocalDate
 
 /**
  * Created by GnyaniMac on 02/10/17.
@@ -67,6 +67,8 @@ class CreateAssignment {
     @NotNull
     int numberOfQuesPerStudent
 
+    Author author = new Author()
+
     @JsonProperty
     List<String []> inputs
 
@@ -76,7 +78,7 @@ class CreateAssignment {
     HashMap<String,List<Integer>> studentQuestionMapping
 
     @JsonProperty
-    List<String[]> options;
+    List<String[]> options
 
     @JsonProperty
     List<int[]> validity;
