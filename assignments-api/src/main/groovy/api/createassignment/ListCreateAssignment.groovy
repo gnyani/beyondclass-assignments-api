@@ -28,4 +28,6 @@ class ListCreateAssignment {
 
     Author author
 
+    boolean postedToNetwork
+
 }

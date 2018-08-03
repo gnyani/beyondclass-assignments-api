@@ -68,4 +68,6 @@ class SaveCreateAssignment {
 
     @JsonProperty
     List<int[]> validity;
+
+    Boolean postedToNetwork;
 }
