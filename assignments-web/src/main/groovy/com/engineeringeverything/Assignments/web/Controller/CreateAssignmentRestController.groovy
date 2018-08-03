@@ -1,6 +1,5 @@
 package com.engineeringeverything.Assignments.web.Controller
 
-import api.createassignment.Author
 import api.createassignment.CreateAssignment
 import api.createassignment.SaveCreateAssignment
 import api.createassignment.UpdateCreateAssignment
@@ -94,8 +93,6 @@ class CreateAssignmentRestController {
         String propicurl = user ?.normalpicUrl ?: user?.googlepicUrl
         createAssignment.setPropicurl(propicurl)
         String time = System.currentTimeMillis()
-        if(createAssignment.author.realOwner == null)
-        createAssignment.author.realOwner = serviceUtilities.toUserDetails(user)
 
         if(createAssignment.assignmentType == AssignmentType.THEORY)
 
@@ -224,16 +221,17 @@ class CreateAssignmentRestController {
     public ResponseEntity<?> fetchAssignmentForPublish(@PathVariable(value="assignmentId" , required = true) String assignmentId){
 
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
-        //When assignment is published set postedToNetwork
-        createAssignment.postedToNetwork=true
-        createAssignment=createAssignmentRepository.save(createAssignment)
-        println("Entered here pratap"+createAssignment.postedToNetwork)
+
+        createAssignment.postedToNetwork = true
 
         if(createAssignment ?. author ?.realOwner  == null){
+
             def user = serviceUtilities.findUserByEmail(createAssignment.email)
 
             createAssignment ?. author ?.realOwner = serviceUtilities.toUserDetails(user)
         }
+
+        createAssignment = createAssignmentRepository.save(createAssignment)
 
         createAssignment ? new ResponseEntity<>(createAssignment,HttpStatus.OK) : new ResponseEntity<>("not found",HttpStatus.NOT_FOUND)
     }
