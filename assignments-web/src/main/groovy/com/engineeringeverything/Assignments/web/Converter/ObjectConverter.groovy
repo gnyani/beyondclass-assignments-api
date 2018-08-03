@@ -39,6 +39,7 @@ class ObjectConverter {
             message = createAssignment.message
             lastdate = createAssignment.lastdate
             author = createAssignment.author
+            postedToNetwork =  createAssignment.postedToNetwork
         }
         listCreateAssignment
     }
@@ -61,6 +62,7 @@ class ObjectConverter {
             options = createAssignment.options
             validity = createAssignment.validity
             author = createAssignment ?. author
+            postedToNetwork = createAssignment ?. postedToNetwork
         }
         saveCreateAssignment
     }

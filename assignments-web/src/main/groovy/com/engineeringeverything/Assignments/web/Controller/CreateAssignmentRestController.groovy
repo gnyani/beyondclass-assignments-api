@@ -224,6 +224,10 @@ class CreateAssignmentRestController {
     public ResponseEntity<?> fetchAssignmentForPublish(@PathVariable(value="assignmentId" , required = true) String assignmentId){
 
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
+        //When assignment is published set postedToNetwork
+        createAssignment.postedToNetwork=true
+        createAssignment=createAssignmentRepository.save(createAssignment)
+        println("Entered here pratap"+createAssignment.postedToNetwork)
 
         if(createAssignment ?. author ?.realOwner  == null){
             def user = serviceUtilities.findUserByEmail(createAssignment.email)
