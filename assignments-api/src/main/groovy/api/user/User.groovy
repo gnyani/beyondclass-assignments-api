@@ -24,7 +24,7 @@ public class User {
      String email;
 
     @JsonProperty
-    @Indexed(unique = true)
+    @Indexed
      String mobilenumber;
 
     @JsonProperty
