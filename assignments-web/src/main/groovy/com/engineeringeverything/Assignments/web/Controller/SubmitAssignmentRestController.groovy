@@ -130,6 +130,7 @@ class SubmitAssignmentRestController {
 
         String teacheremail = idsplit[6]
 
+        String teachercollege = idsplit[1]
         Boolean sendEmail = true
 
         def user = serviceUtilities.findUserByEmail(submitAssignment.email)
@@ -163,7 +164,7 @@ class SubmitAssignmentRestController {
            if(sendEmail) {
                task {
                    String[] emails = [user.email]
-                   String htmlMessage = emailUtils.createEmailMessage(EmailTypes.EVALUATION_DONE, teacheremail)
+                   String htmlMessage = emailUtils.createEmailMessage(EmailTypes.EVALUATION_DONE, teacheremail, teachercollege)
                    String subject = emailUtils.createSubject(EmailTypes.EVALUATION_DONE)
                    mailService.sendHtmlMail(emails, subject, htmlMessage)
                }.then { println("Sending mail task done to user ${user.email}") }

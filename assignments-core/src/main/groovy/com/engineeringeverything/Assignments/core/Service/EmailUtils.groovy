@@ -2,6 +2,7 @@ package com.engineeringeverything.Assignments.core.Service
 
 import com.engineeringeverything.Assignments.core.constants.EmailTypes
 import groovy.text.SimpleTemplateEngine
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
@@ -16,9 +17,11 @@ class EmailUtils {
 
     public String createEmailMessage(EmailTypes type, String ... strings){
 
-        String message = "";
+        String message = ""
 
         String sender = strings[0]
+
+        String college = strings[1].toLowerCase()
 
 
         if(type == EmailTypes.ANNOUNCEMENT)
@@ -26,7 +29,7 @@ class EmailUtils {
             def emailTemplate = getClass().getResource("/New_Announcement_posted.html")
             Map<String,String> config = new HashMap<>()
             config.put("type",EmailTypes.ANNOUNCEMENT.toString())
-            config.put("hostname",hostName)
+            config.put("hostname","${college}.${hostName}")
             config.put("sender",sender)
             def engine = new SimpleTemplateEngine()
             def template = engine.createTemplate(emailTemplate).make(config)
@@ -41,7 +44,7 @@ class EmailUtils {
             def emailTemplate = getClass().getResource("/New_Assignment_Posted.html")
             Map<String,String> config = new HashMap<>()
             config.put("type",EmailTypes.ASSIGNMENT.toString())
-            config.put("hostname",hostName)
+            config.put("hostname","${college}.${hostName}")
             config.put("sender",sender)
             def engine = new SimpleTemplateEngine()
             def template = engine.createTemplate(emailTemplate).make(config)
@@ -52,7 +55,7 @@ class EmailUtils {
         {
             def emailTemplate = getClass().getResource("/Assignment_evaluation.html")
             Map<String,String> config = new HashMap<>()
-            config.put("hostname",hostName)
+            config.put("hostname","${college}.${hostName}")
             config.put("sender",sender)
             def engine = new SimpleTemplateEngine()
             def template = engine.createTemplate(emailTemplate).make(config)
@@ -60,11 +63,11 @@ class EmailUtils {
         }
         else if(type == EmailTypes.REMINDER_NOTIFIER)
         {
-            String noOfDays = strings[1]
+            String noOfDays = strings[2]
             def emailTemplate = getClass().getResource("/Assignment_Notification.html")
             Map<String,String> config = new HashMap()
             config.put("noOfDays",noOfDays)
-            config.put("hostname",hostName)
+            config.put("hostname","${college}.${hostName}")
             config.put("sender",sender)
             def engine = new SimpleTemplateEngine()
             def template = engine.createTemplate(emailTemplate).make(config)

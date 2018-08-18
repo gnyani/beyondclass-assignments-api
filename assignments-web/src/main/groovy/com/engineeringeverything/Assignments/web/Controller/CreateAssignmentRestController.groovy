@@ -125,7 +125,7 @@ class CreateAssignmentRestController {
             notificationService.storeNotifications(user, message, "teacherstudentspace", createAssignment.batch)
             //sending email to the class
             String uniqueClassId = serviceUtilities.generateFileName(user.university,user.college,user.branch,section,startyear,endyear)
-            findUsersAndSendEmail(uniqueClassId,EmailTypes.ASSIGNMENT,user.email,createAssignment.assignmentid)
+            findUsersAndSendEmail(uniqueClassId,EmailTypes.ASSIGNMENT, user.email, user.college, createAssignment.assignmentid)
         }
         assignment ? new ResponseEntity<>("created successfully",HttpStatus.OK) : new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
@@ -314,7 +314,7 @@ class CreateAssignmentRestController {
 
             if (reminderNotifier.email) {
                 task {
-                    String htmlMessage = emailUtils.createEmailMessage(EmailTypes.REMINDER_NOTIFIER, createAssignment.email, Integer.toString(numberofDaysLeft))
+                    String htmlMessage = emailUtils.createEmailMessage(EmailTypes.REMINDER_NOTIFIER, createAssignment.email,createAssignment.author.realOwner.college, Integer.toString(numberofDaysLeft))
                     String subject = emailUtils.createSubject(EmailTypes.REMINDER_NOTIFIER)
                     mailService.sendHtmlMail(studentsToNotify as String[], subject, htmlMessage)
                 }.then {
@@ -366,7 +366,7 @@ class CreateAssignmentRestController {
         newAssignment ? new ResponseEntity<?>(newAssignment,HttpStatus.CREATED) : new ResponseEntity<?>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
-    void findUsersAndSendEmail(String classId,EmailTypes emailTypes,String sender,String assignmentId){
+    void findUsersAndSendEmail(String classId,EmailTypes emailTypes,String sender, String college, String assignmentId){
 
         task {
             List<User> users = userRepository.findByUniqueclassid(classId)
@@ -376,7 +376,7 @@ class CreateAssignmentRestController {
             }
             String[] emails = new String[toEmails.size()]
             emails = toEmails.toArray(emails)
-            String htmlMessage = emailUtils.createEmailMessage(emailTypes, sender)
+            String htmlMessage = emailUtils.createEmailMessage(emailTypes, sender, college)
             String subject = emailUtils.createSubject(emailTypes)
 
             mailService.sendHtmlMail(emails, subject, htmlMessage)
