@@ -67,7 +67,7 @@ class InsightRestController {
         if(insights == null) {
             insights = new Insights()
             if(submitAssignment.answers != null){
-                for (def i = 1; i < submitAssignment?.answers?.length + 1; i++) {
+                for (def i = 1; i < submitAssignment.answers.length + 1; i++) {
                     def maxMatch = getThreshold(submitAssignment,i-1)
                     def matchedUsers = []
                     def matchedRollNumbers = []
@@ -77,7 +77,6 @@ class InsightRestController {
                         def answerIndex = findAnswerToCompare(i - 1, submitAssignment.questionIndex, allassignments[j])
                         if(answerIndex != -1) {
                             def currentMatch = l.distance(submitAssignment?.answers[i - 1], allassignments[j]?.answers[answerIndex])
-                            print("Current match"+currentMatch+":"+maxMatch)
                             if (1 - currentMatch > maxMatch) {
                                 matchedUsers << allassignments[j].username
                                 matchedRollNumbers << allassignments[j].rollnumber
@@ -137,8 +136,10 @@ class InsightRestController {
 
         def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
        if(assignment?.thresholdarray!=null){
-
-           return assignment.thresholdarray[submitAssignment.questionIndex[k]]/100
+           if(submitAssignment.questionIndex.size()-1 >= k)
+               return assignment.thresholdarray[submitAssignment.questionIndex[k]]/100
+           else
+               return 1.1
 
         }
 

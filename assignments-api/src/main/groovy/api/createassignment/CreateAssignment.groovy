@@ -56,7 +56,11 @@ class CreateAssignment {
     @NotEmpty
     @NotNull
     Object[] questions
+
+
     @JsonProperty
+    @NotEmpty
+    @NotNull
     int[] thresholdarray
 
     @JsonProperty
