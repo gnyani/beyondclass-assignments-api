@@ -142,8 +142,6 @@ class InsightRestController {
                return 1.1
 
         }
-
-
        if(assignment.assignmentType == AssignmentType.THEORY){
             threshold = 0.80
         }else if(assignment.assignmentType == AssignmentType.CODING){
