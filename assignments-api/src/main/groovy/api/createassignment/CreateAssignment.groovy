@@ -56,6 +56,8 @@ class CreateAssignment {
     @NotEmpty
     @NotNull
     Object[] questions
+    @JsonProperty
+    int[] thresholdarray
 
     @JsonProperty
     @NotEmpty
@@ -89,4 +91,7 @@ class CreateAssignment {
 
     @JsonProperty
     boolean postedToNetwork;
+
+    @JsonProperty
+    List<String> Threshold
 }

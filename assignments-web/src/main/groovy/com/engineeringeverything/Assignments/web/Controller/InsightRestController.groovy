@@ -68,7 +68,7 @@ class InsightRestController {
             insights = new Insights()
             if(submitAssignment.answers != null){
                 for (def i = 1; i < submitAssignment?.answers?.length + 1; i++) {
-                    def maxMatch = getThreshold(submitAssignment)
+                    def maxMatch = getThreshold(submitAssignment,i-1)
                     def matchedUsers = []
                     def matchedRollNumbers = []
                     NormalizedLevenshtein l = new NormalizedLevenshtein();
@@ -77,6 +77,7 @@ class InsightRestController {
                         def answerIndex = findAnswerToCompare(i - 1, submitAssignment.questionIndex, allassignments[j])
                         if(answerIndex != -1) {
                             def currentMatch = l.distance(submitAssignment?.answers[i - 1], allassignments[j]?.answers[answerIndex])
+                            print("Current match"+currentMatch+":"+maxMatch)
                             if (1 - currentMatch > maxMatch) {
                                 matchedUsers << allassignments[j].username
                                 matchedRollNumbers << allassignments[j].rollnumber
@@ -130,12 +131,19 @@ class InsightRestController {
         validityList
     }
 
-    double getThreshold(SubmitAssignment submitAssignment){
+    double getThreshold(SubmitAssignment submitAssignment,int k){
         def threshold = 0.60
         def assignmentid= submitAssignment.tempassignmentid.replace('-'+submitAssignment ?. email,'')
 
         def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
-        if(assignment.assignmentType == AssignmentType.THEORY){
+       if(assignment?.thresholdarray!=null){
+
+           return assignment.thresholdarray[submitAssignment.questionIndex[k]]/100
+
+        }
+
+
+       if(assignment.assignmentType == AssignmentType.THEORY){
             threshold = 0.80
         }else if(assignment.assignmentType == AssignmentType.CODING){
             threshold = 0.60
