@@ -94,6 +94,10 @@ class CreateAssignmentRestController {
         createAssignment.setPropicurl(propicurl)
         String time = System.currentTimeMillis()
 
+        if(createAssignment?.author?.realOwner == null){
+            createAssignment.author.realOwner = serviceUtilities.toUserDetails(user)
+        }
+
         if(createAssignment.assignmentType == AssignmentType.THEORY)
 
             createAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
