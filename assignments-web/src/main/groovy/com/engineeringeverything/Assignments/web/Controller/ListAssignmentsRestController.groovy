@@ -157,6 +157,7 @@ class ListAssignmentsRestController {
                 SaveProgrammingAssignment saveProgrammingAssignment = saveProgrammingAssignmentRepository.findByTempassignmentid(serviceUtilities.generateFileName(assignmentId, email))
                 returnSavedAssignment.setSource(saveProgrammingAssignment?.source)
                 returnSavedAssignment.setLanguage(saveProgrammingAssignment?.language)
+                returnSavedAssignment.setLangCodes(saveProgrammingAssignment?.langCodes)
                 returnSavedAssignment.setTheme(saveProgrammingAssignment?.theme)
                 if (saveProgrammingAssignment?.timespent != null)
                     returnSavedAssignment.setTimespent(saveProgrammingAssignment?.timespent)

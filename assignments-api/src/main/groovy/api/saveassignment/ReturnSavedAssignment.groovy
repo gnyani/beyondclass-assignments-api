@@ -15,6 +15,8 @@ class ReturnSavedAssignment {
 
     String[] source
 
+    int[] langCodes
+
     List<String[]> options
 
     List<int[]> validity

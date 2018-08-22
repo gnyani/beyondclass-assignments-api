@@ -27,6 +27,11 @@ class SaveProgrammingAssignment {
     @JsonProperty
     @NotNull
     @NotEmpty
+    int[] langCodes
+
+    @JsonProperty
+    @NotNull
+    @NotEmpty
     String[] source
 
     @JsonProperty
