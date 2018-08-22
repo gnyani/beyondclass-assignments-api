@@ -228,7 +228,7 @@ class OnlineCompilerRestController {
                 int i = 0
                 def flag
                  expected.each{
-                     if( actual[i] != it)
+                     if( actual == null || actual[i] != it)
                      {
                          flag = true
                          return
