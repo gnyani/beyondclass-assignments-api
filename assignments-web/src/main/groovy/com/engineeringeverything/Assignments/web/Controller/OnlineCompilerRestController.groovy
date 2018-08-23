@@ -200,11 +200,13 @@ class OnlineCompilerRestController {
 
         actual = actual.collect{it.trim()}
 
-        println("actual is ${actual}")
+        println("actual is ${actual.toString()}")
 
-        println("expected is ${expected}")
+        println("expected is ${expected.toString()}")
 
-        actual == expected
+        def diff = actual.properties - expected.properties
+
+        diff == [:]
     }
 
     def buildResponse(Boolean validation, def response, def expected){
