@@ -168,14 +168,9 @@ class CreateAssignmentRestController {
         }
 
         if(saveCreateAssignment1 == null)
-            if(saveCreateAssignment.assignmentType == AssignmentType.THEORY || saveCreateAssignment.assignmentType == AssignmentType.OBJECTIVE)
 
                 saveCreateAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
                         section,startyear,endyear,saveCreateAssignment.email,saveCreateAssignment.subject,time))
-            else
-
-                saveCreateAssignment.setAssignmentid(serviceUtilities.generateFileName(user.getUniversity(),user.getCollege(),user.getBranch(),
-                        section,startyear,endyear,saveCreateAssignment.email,time))
         else{
             saveCreateAssignment.setAssignmentid(saveCreateAssignment1.assignmentid)
             saveCreateAssignment.author.realOwner = saveCreateAssignment1.author.realOwner

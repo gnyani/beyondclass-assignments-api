@@ -32,6 +32,11 @@ class SaveProgrammingAssignment {
     @JsonProperty
     @NotNull
     @NotEmpty
+    String subject
+
+    @JsonProperty
+    @NotNull
+    @NotEmpty
     String[] source
 
     @JsonProperty

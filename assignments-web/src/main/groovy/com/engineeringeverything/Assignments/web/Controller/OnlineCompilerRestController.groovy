@@ -200,6 +200,8 @@ class OnlineCompilerRestController {
 
         actual = actual.collect{it.trim()}
 
+        expected = expected.collect{it.trim()}
+
         println("actual is ${actual.toString()}")
 
         println("expected is ${expected.toString()}")
