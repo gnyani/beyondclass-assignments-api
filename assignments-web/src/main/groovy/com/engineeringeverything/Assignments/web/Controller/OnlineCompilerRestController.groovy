@@ -206,9 +206,7 @@ class OnlineCompilerRestController {
 
         println("expected is ${expected.toString()}")
 
-        def diff = actual.properties - expected.properties
-
-        diff == [:]
+        actual == expected
     }
 
     def buildResponse(Boolean validation, def response, def expected){
