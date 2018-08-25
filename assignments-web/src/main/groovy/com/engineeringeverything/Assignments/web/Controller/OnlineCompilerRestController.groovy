@@ -218,7 +218,7 @@ class OnlineCompilerRestController {
         if(validation){
             codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.SUCCESS
         }else{
-            if(jsonResponse.result.compilemessage != '') {
+            if(jsonResponse.result.compilemessage.contains("error")) {
                 codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.COMPILER_ERROR
                 codingAssignmentResponse.errorMessage = jsonResponse.result.compilemessage
             }
