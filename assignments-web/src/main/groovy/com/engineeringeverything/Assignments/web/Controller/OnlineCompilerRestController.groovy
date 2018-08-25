@@ -222,9 +222,9 @@ class OnlineCompilerRestController {
                 codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.COMPILER_ERROR
                 codingAssignmentResponse.errorMessage = jsonResponse.result.compilemessage
             }
-            else if(jsonResponse.result.message && jsonResponse.result.message[0] == "Runtime error"){
+            else if(jsonResponse.result.message && jsonResponse.result.message.contains("Runtime error")){
                 codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.RUNTIME_ERROR
-                codingAssignmentResponse.errorMessage = jsonResponse.result.stderr[0]
+                codingAssignmentResponse.errorMessage = jsonResponse.result.stderr
             }else{
                 String[] actual = jsonResponse.result.stdout
                 int i = 0
