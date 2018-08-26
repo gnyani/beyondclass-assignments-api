@@ -160,7 +160,9 @@ class OnlineCompilerRestController {
             def testcases = assignment.inputs[questionNumber]
             def testcasesJson = JsonOutput.toJson(testcases)
             def expected = assignment.outputs[questionNumber]
-            expected = expected.collect { it.trim() }
+            expected = expected.collect {
+                removeUselessSpaces(it.trim())
+            }
 
             HttpPost httpPost = new HttpPost("http://api.hackerrank.com/checker/submission.json");
             CloseableHttpClient client = HttpClients.createDefault()
@@ -198,15 +200,25 @@ class OnlineCompilerRestController {
 
         def actual = actualResponse.result.stdout
 
-        actual = actual.collect{it.trim()}
+        actual = actual.collect{
+            removeUselessSpaces(it.trim())
+        }
 
-        expected = expected.collect{it.trim()}
-
-        println("actual is ${actual.toString()}")
+        println("actual is  ${actual.toString()}")
 
         println("expected is ${expected.toString()}")
 
         actual == expected
+    }
+
+    def removeUselessSpaces(String expected){
+
+        println("expected before trimming ${expected}")
+        def splits = expected.split('\n')
+        splits = splits.collect{it.trim()}
+        expected = splits.join('\n')
+        println("expected after trimming ${expected}")
+        expected
     }
 
     def buildResponse(Boolean validation, def response, def expected){
@@ -227,6 +239,7 @@ class OnlineCompilerRestController {
                 codingAssignmentResponse.errorMessage = jsonResponse.result.stderr
             }else{
                 String[] actual = jsonResponse.result.stdout
+                actual = actual.collect{removeUselessSpaces(it.trim())}
                 int i = 0
                 def flag
                  expected.each{
@@ -241,7 +254,7 @@ class OnlineCompilerRestController {
                     codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.TESTS_FAILED
                     codingAssignmentResponse.failedCase = i + 1
                     codingAssignmentResponse.totalCount = expected.size()
-                    codingAssignmentResponse.passCount = i > 0 ? i-1 : i
+                    codingAssignmentResponse.passCount = i
                     codingAssignmentResponse.expected = expected[i]
                     codingAssignmentResponse.actual = actual[i]
                 }
