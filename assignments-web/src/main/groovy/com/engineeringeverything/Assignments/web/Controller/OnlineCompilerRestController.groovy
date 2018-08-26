@@ -180,7 +180,7 @@ class OnlineCompilerRestController {
             def validation = validateAssignmentResult(expected, responseString)
 
             println("Building response with ${validation} and from Hr is ${responseString} and ${expected}")
-            def finalresponse = buildResponse(validation, responseString, expected)
+            def finalresponse = buildResponse(validation, responseString, expected, testcases)
 
             client.close()
 
@@ -221,7 +221,7 @@ class OnlineCompilerRestController {
         expected
     }
 
-    def buildResponse(Boolean validation, def response, def expected){
+    def buildResponse(Boolean validation, def response, def expected, def expectedInput){
 
         CodingAssignmentResponse codingAssignmentResponse = new CodingAssignmentResponse()
 
@@ -257,6 +257,7 @@ class OnlineCompilerRestController {
                     codingAssignmentResponse.passCount = i
                     codingAssignmentResponse.expected = expected[i]
                     codingAssignmentResponse.actual = actual[i]
+                    codingAssignmentResponse.expectedInput = expectedInput[i]
                 }
             }
         }

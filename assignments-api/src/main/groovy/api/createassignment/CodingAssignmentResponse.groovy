@@ -11,6 +11,8 @@ class CodingAssignmentResponse {
 
     CodingAssignmentStatus codingAssignmentStatus
 
+    String expectedInput
+
     String expected
 
     String actual
