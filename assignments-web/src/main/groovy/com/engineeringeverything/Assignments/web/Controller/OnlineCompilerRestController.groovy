@@ -242,11 +242,11 @@ class OnlineCompilerRestController {
                 actual = actual.collect{removeUselessSpaces(it.trim())}
                 int i = 0
                 def flag
-                 expected.each{
+                 expected.find{
                      if(actual[i] != it)
                      {
                          flag = true
-                         return
+                         return true
                      }
                      i++
                  }
