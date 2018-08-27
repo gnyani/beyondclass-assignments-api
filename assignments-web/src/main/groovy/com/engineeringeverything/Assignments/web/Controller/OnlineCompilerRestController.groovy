@@ -161,6 +161,7 @@ class OnlineCompilerRestController {
             def testcasesJson = JsonOutput.toJson(testcases)
             def expected = assignment.outputs[questionNumber]
             expected = expected.collect {
+                println(it)
                 removeUselessSpaces(it.trim())
             }
 
@@ -236,10 +237,10 @@ class OnlineCompilerRestController {
                 codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.COMPILER_ERROR
                 codingAssignmentResponse.errorMessage = jsonResponse.result.compilemessage
             }
-            else if(message && message.contains("Runtime error") || jsonResponse.result.stderr.toString().contains("Exception")){
+            else if((message && message.contains("Runtime error")) || (message && message.contains("Segmentation Fault")) ){
                 codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.RUNTIME_ERROR
                 codingAssignmentResponse.errorMessage = jsonResponse.result.stderr
-                int index = message.findIndexOf{it == "Runtime error"} > 0 ?: 0
+                int index = message.findIndexOf{it == "Runtime error"} > 0 ? message.findIndexOf{it == "Runtime error"}: 0
                 codingAssignmentResponse.expectedInput = expectedInput[index]
             }else{
                 String[] actual = jsonResponse.result.stdout
