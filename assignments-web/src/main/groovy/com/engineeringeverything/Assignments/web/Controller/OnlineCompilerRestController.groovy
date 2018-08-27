@@ -227,6 +227,8 @@ class OnlineCompilerRestController {
 
         def jsonResponse = slurper.parseText(response)
 
+        def message = jsonResponse.result.message
+
         if(validation){
             codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.SUCCESS
         }else{
@@ -234,9 +236,11 @@ class OnlineCompilerRestController {
                 codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.COMPILER_ERROR
                 codingAssignmentResponse.errorMessage = jsonResponse.result.compilemessage
             }
-            else if(jsonResponse.result.message && jsonResponse.result.message.contains("Runtime error")){
+            else if(message && message.contains("Runtime error") || jsonResponse.result.stderr.toString().contains("Exception")){
                 codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.RUNTIME_ERROR
                 codingAssignmentResponse.errorMessage = jsonResponse.result.stderr
+                int index = message.findIndexOf{it == "Runtime error"} > 0 ?: 0
+                codingAssignmentResponse.expectedInput = expectedInput[index]
             }else{
                 String[] actual = jsonResponse.result.stdout
                 actual = actual.collect{removeUselessSpaces(it.trim())}
