@@ -36,6 +36,11 @@ class SaveCreateAssignment {
     String subject
 
     @JsonProperty
+    @NotNull
+    @NotEmpty
+    int[] thresholdarray
+
+    @JsonProperty
     @NotEmpty
     @NotNull
     String batch
