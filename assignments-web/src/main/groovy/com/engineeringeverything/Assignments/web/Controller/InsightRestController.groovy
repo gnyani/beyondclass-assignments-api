@@ -131,7 +131,7 @@ class InsightRestController {
     }
 
     double getThreshold(SubmitAssignment submitAssignment,int k){
-        def threshold = 0.60
+        def threshold = 0.75
         def assignmentid= submitAssignment.tempassignmentid.replace('-'+submitAssignment ?. email,'')
 
         def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
@@ -143,9 +143,9 @@ class InsightRestController {
 
         }
        if(assignment.assignmentType == AssignmentType.THEORY){
-            threshold = 0.80
+            threshold = 0.85
         }else if(assignment.assignmentType == AssignmentType.CODING){
-            threshold = 0.60
+            threshold = 0.75
         }
         threshold
     }
