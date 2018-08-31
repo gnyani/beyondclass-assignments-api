@@ -46,7 +46,7 @@ class GetQuestions {
               }
             questions.add(stringBuilder.toString())
         }
-        log.info("Prasing questions from content state")
+        log.info("Prasing questions from content state from Id")
         questions
     }
 
