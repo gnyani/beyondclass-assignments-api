@@ -7,6 +7,8 @@ import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentR
 import com.engineeringeverything.Assignments.core.Repositories.SubmitAssignmentRepository
 import com.engineeringeverything.Assignments.core.Service.CsvGenerator
 import constants.AssignmentType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -26,6 +28,8 @@ import javax.servlet.http.HttpServletResponse
 @RestController
 class InsightRestController {
 
+    private Logger log = LoggerFactory.getLogger(InsightRestController.class)
+
     @Autowired
     SubmitAssignmentRepository submitAssignmentRepository
 
@@ -41,6 +45,8 @@ class InsightRestController {
     @ResponseBody
     @GetMapping(value='/teacher/insights/{submissionid:.+}')
     public ResponseEntity<?> generateInsights(@PathVariable(value="submissionid" , required = true) String submissionid){
+
+        log.info("<InsightRestController> generating insights for submission ${submissionid}")
 
         SubmitAssignment submitAssignment = submitAssignmentRepository.findByTempassignmentid(submissionid)
 
@@ -63,6 +69,9 @@ class InsightRestController {
 
 
     public def computeInsights(SubmitAssignment submitAssignment,HashSet<SubmitAssignment> allassignments){
+
+        log.info("<InsightRestController> Computing insights for submission of ${submitAssignment.email}")
+
         Insights insights = submitAssignment.insights
         if(insights == null) {
             insights = new Insights()
@@ -131,6 +140,8 @@ class InsightRestController {
     }
 
     double getThreshold(SubmitAssignment submitAssignment,int k){
+        log.info("<InsightRestController> fetching plagarism threshold")
+
         def threshold = 0.75
         def assignmentid= submitAssignment.tempassignmentid.replace('-'+submitAssignment ?. email,'')
 
@@ -179,6 +190,7 @@ class InsightRestController {
     @PostMapping(value = '/generate/excel/{assignmentid:.+}',produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<?> generateExcel(@PathVariable(value = "assignmentid" , required = true) String assignmentid,HttpServletResponse response){
 
+        log.info("<InsightRestController> generating excel sheet reports for assignment ${assignmentid}")
 
         List<SubmitAssignment> submitAssignments = submitAssignmentRepository.findByTempassignmentidStartingWithOrderByRollnumber(assignmentid)
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentid)

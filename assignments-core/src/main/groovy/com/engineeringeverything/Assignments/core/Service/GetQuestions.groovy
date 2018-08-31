@@ -2,6 +2,8 @@ package com.engineeringeverything.Assignments.core.Service
 
 import api.createassignment.CreateAssignment
 import com.engineeringeverything.Assignments.core.Repositories.CreateAssignmentRepository
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -9,6 +11,8 @@ import java.nio.file.Path
 
 @Service
 class GetQuestions {
+
+    private Logger log = LoggerFactory.getLogger(GetQuestions.class)
 
     @Autowired
     CreateAssignmentRepository  createAssignmentRepository
@@ -42,7 +46,7 @@ class GetQuestions {
               }
             questions.add(stringBuilder.toString())
         }
-        println("Prasing questions from content state")
+        log.info("Prasing questions from content state")
         questions
     }
 
@@ -56,15 +60,15 @@ class GetQuestions {
             }
             parsedQuestions.add(stringBuilder.toString())
         }
-        println("Prasing questions from content state")
+        log.info("Prasing questions from content state")
         parsedQuestions
     }
 
     Path generatePDF(String assignmentId, List questions){
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
-        println("Generating PDF of questions")
+        log.info("Generating PDF of questions")
         def filePath = pdfGenerator.createPDF(createAssignment.email, createAssignment.subject, questions, createAssignment.options, createAssignment.validity)
-        println("Done")
+        log.info("Done")
         filePath
     }
 }

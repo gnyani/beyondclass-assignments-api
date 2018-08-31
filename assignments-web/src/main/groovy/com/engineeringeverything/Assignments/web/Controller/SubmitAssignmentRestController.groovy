@@ -13,6 +13,8 @@ import com.engineeringeverything.Assignments.core.Service.MailService
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import com.engineeringeverything.Assignments.core.constants.EmailTypes
 import constants.AssignmentType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -28,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 class SubmitAssignmentRestController {
+
+    private Logger log = LoggerFactory.getLogger(SubmitAssignmentRestController.class)
 
     @Autowired
     SubmitAssignmentRepository submitAssignmentRepository
@@ -53,13 +57,21 @@ class SubmitAssignmentRestController {
     public ResponseEntity<?> submitAssignment(@RequestBody SubmitAssignment submitAssignment){
         def user = serviceUtilities.findUserByEmail(submitAssignment.email)
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(submitAssignment.tempassignmentid)
-        submitAssignment.setTempassignmentid(serviceUtilities.generateFileName(submitAssignment.tempassignmentid,submitAssignment.email))
-        String propicurl = user.normalpicUrl ?: user.googlepicUrl
-        submitAssignment.setPropicurl(propicurl)
-        submitAssignment.setUsername(serviceUtilities.generateUserName(user))
-        submitAssignment.setRollnumber(user ?. rollNumber)
-        submitAssignment.setQuestionIndex(createAssignment.studentQuestionMapping.get(submitAssignment.email))
-        submitAssignment.setStatus(AssignmentSubmissionStatus.PENDING_APPROVAL)
+
+        log.info("<SubmitAssignmentRestController> Submitting students assignment with email ${submitAssignment.email} and to the " +
+                "asssignment ${createAssignment.assignmentid} and type is${createAssignment.assignmentType}")
+
+        String profilepicurl = user.normalpicUrl ?: user.googlepicUrl
+
+        submitAssignment.with {
+            tempassignmentid = serviceUtilities.generateFileName(submitAssignment.tempassignmentid,submitAssignment.email)
+            propicurl = profilepicurl
+            username = serviceUtilities.generateUserName(user)
+            rollnumber = user ?. rollNumber
+            questionIndex = createAssignment.studentQuestionMapping.get(submitAssignment.email)
+            status = AssignmentSubmissionStatus.PENDING_APPROVAL
+        }
+
         if(createAssignment.getAssignmentType().equals(AssignmentType.OBJECTIVE)){
             def marks = getMarks(submitAssignment.getUserValidity(), getValidityOfQuestion(createAssignment,submitAssignment.email));
             submitAssignment.setMarksGiven(marks);
@@ -69,6 +81,8 @@ class SubmitAssignmentRestController {
             submitAssignment.insights = generateObjectiveInsights(submitAssignment)
         }
         SubmitAssignment submitAssignment1 = submitAssignmentRepository.save(submitAssignment)
+
+        log.info("<SubmitAssignmentRestController> Adding Submitted Student to the list of assignment ${createAssignment.assignmentid}")
         def currentSubmittedStudents =  createAssignment.getSubmittedstudents()
         def submittedDates = createAssignment.getSubmittedDates()
         if(currentSubmittedStudents) {
@@ -95,12 +109,14 @@ class SubmitAssignmentRestController {
                 correctCount+=1;
             }
         }
-        println("correctcount is ${correctCount} and validity is ${validity.size()}")
+        log.info("<SubmitAssignmentRestContoller>Computing marks for objectiveAssignment submission correctcount is ${correctCount} and " +
+                "validity is ${validity.size()}")
         return Math.round(correctCount/validity.size()*100)/100* 5;
     }
 
     Insights generateObjectiveInsights(SubmitAssignment submitAssignment){
         Insights insights = new Insights()
+        log.info("<SubmitAssignmentRestContoller> Generating Insights for Objective Assignment")
         def assignmentid= submitAssignment.tempassignmentid.replace('-'+submitAssignment ?. email,'')
         def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
         def validList = getValidityOfQuestion(assignment,submitAssignment.email)
@@ -123,6 +139,7 @@ class SubmitAssignmentRestController {
     @PostMapping(value = '/update/evaluation/{submissionid:.+}')
     public ResponseEntity<?>  updateSubmissionStatus(@PathVariable(value="submissionid" , required = true) String submissionid,@RequestBody UpdateAssignmentStatus updateAssignmentStatus){
 
+        log.info("<SubmitAssignmentRestContoller>Evaluating the submission with Id ${submissionid}")
 
         SubmitAssignment submitAssignment = submitAssignmentRepository.findByTempassignmentid(submissionid)
 
@@ -167,9 +184,9 @@ class SubmitAssignmentRestController {
                    String htmlMessage = emailUtils.createEmailMessage(EmailTypes.EVALUATION_DONE, teacheremail, teachercollege)
                    String subject = emailUtils.createSubject(EmailTypes.EVALUATION_DONE)
                    mailService.sendHtmlMail(emails, subject, htmlMessage)
-               }.then { println("Sending mail task done to user ${user.email}") }
+               }.then { log.info("<SubmitAssignmentRestController>Sending mail task done to user ${user.email} for Id ${submitAssignment.tempassignmentid}") }
            }else{
-               println("not required to send email")
+               log.info("<SubmitAssignmentRestController> not required to send email")
            }
         }
         submitAssignment1 ? new ResponseEntity<>('Success',HttpStatus.OK) : new ResponseEntity<>('Something went wrong',HttpStatus.INTERNAL_SERVER_ERROR)

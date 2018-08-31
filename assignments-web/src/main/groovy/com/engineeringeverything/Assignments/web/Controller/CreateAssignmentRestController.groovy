@@ -21,6 +21,8 @@ import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import com.engineeringeverything.Assignments.core.constants.EmailTypes
 import com.engineeringeverything.Assignments.web.Converter.ObjectConverter
 import constants.AssignmentType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.RequestParam
@@ -45,6 +47,8 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 class CreateAssignmentRestController {
+
+    private Logger log = LoggerFactory.getLogger(CreateAssignmentRestController.class)
 
     @Autowired
     ServiceUtilities serviceUtilities
@@ -85,6 +89,8 @@ class CreateAssignmentRestController {
     @ResponseBody
     @PostMapping(value = '/create')
     public ResponseEntity<?> createAssignment( @RequestBody CreateAssignment createAssignment){
+        log.info("<CreateAssignmentRestController> Creating assignment for teacher ${createAssignment.email} and" +
+                "assignmentType is ${createAssignment.assignmentType} on subject ${createAssignment.subject}")
         def user = serviceUtilities.findUserByEmail(createAssignment.email)
         def splits = createAssignment.batch.split('-')
         String startyear = splits[0]
@@ -144,6 +150,9 @@ class CreateAssignmentRestController {
     @ResponseBody
     @PostMapping(value = '/create/save')
     public ResponseEntity<?> saveAssignment (@RequestBody SaveCreateAssignment saveCreateAssignment){
+
+        log.info("<CreateAssignmentRestController> Saving assignment draft for teacher ${saveCreateAssignment.email}")
+
         def user = serviceUtilities.findUserByEmail(saveCreateAssignment.email)
         def splits = saveCreateAssignment.batch.split('-')
         String startyear = splits[0]
@@ -185,6 +194,8 @@ class CreateAssignmentRestController {
     @GetMapping(value="/get/questions/{assignmentId:.+}",produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<?> getQuestions(@PathVariable(value="assignmentId" , required = true) String assignmentId,HttpServletResponse response){
 
+        log.info("<CreateAssignmentRestController> Downloading assignment for assignmentId ${assignmentId}")
+
         Path questionsPDF = getQuestions.parseQuestionsAndGeneratePDF(assignmentId)
 
         byte[] file = Files.readAllBytes(questionsPDF)
@@ -201,6 +212,8 @@ class CreateAssignmentRestController {
     @GetMapping(value = '/teacher/get/{assignmentId:.+}')
     public ResponseEntity<?> fetchSavedAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId){
 
+        log.info("<CreateAssignmentRestController> Fetching saved assignment for teacher with assignmentId ${assignmentId}")
+
         SaveCreateAssignment saveCreateAssignment = saveCreateAssignmentRepository.findByAssignmentid(assignmentId)
 
         saveCreateAssignment ? new ResponseEntity<>(saveCreateAssignment,HttpStatus.OK) : new ResponseEntity<>("not found",HttpStatus.NOT_FOUND)
@@ -210,6 +223,8 @@ class CreateAssignmentRestController {
     @GetMapping(value = '/teacher/get/assignment/{assignmentId:.+}')
     public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId){
 
+        log.info("<CreateAssignmentRestController> Fetching created assignment for teacher with assignmentId ${assignmentId}")
+
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
 
         createAssignment ? new ResponseEntity<>(createAssignment,HttpStatus.OK) : new ResponseEntity<>("not found",HttpStatus.NOT_FOUND)
@@ -218,6 +233,8 @@ class CreateAssignmentRestController {
     @ResponseBody
     @GetMapping(value = '/teacher/get/assignment/publish/{assignmentId:.+}')
     public ResponseEntity<?> fetchAssignmentForPublish(@PathVariable(value="assignmentId" , required = true) String assignmentId){
+
+        log.info("<CreateAssignmentRestController> publishing the assignment to teachers network ${assignmentId}")
 
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
 
@@ -238,6 +255,7 @@ class CreateAssignmentRestController {
     @ResponseBody
     @PostMapping(value = 'teacher/update/{assignmentId:.+}')
     public  ResponseEntity<?> updateAssignment(@PathVariable(value="assignmentId", required = true) String assignmentId, @RequestBody UpdateCreateAssignment updatedAssignment){
+        log.info("<CreateAssignmentRestController> updating the assignment ${assignmentId}")
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
         if(updatedAssignment.assignmentType == AssignmentType.THEORY){
             createAssignment.questions = updatedAssignment.questions
@@ -264,6 +282,9 @@ class CreateAssignmentRestController {
     @ResponseBody
     @PostMapping(value = 'teacher/activate/{assignmentId:.+}')
     public ResponseEntity<?> activateAssignment(@PathVariable(value="assignmentId", required = true) String assignmentId,@RequestBody String email){
+
+        log.info("<CreateAssignmentRestController> reactivating the assignment for student ${email} ${assignmentId}")
+
         CreateAssignment createAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
         createAssignment?.submittedstudents?.remove(email)
         def updatedAssignment = createAssignmentRepository.save(createAssignment)
@@ -279,6 +300,7 @@ class CreateAssignmentRestController {
     @ResponseBody
     @PostMapping(value = '/teacher/notify')
     public ResponseEntity<?> notifyStudents(@RequestBody ReminderNotifier reminderNotifier){
+        log.info("<CreateAssignmentRestController> sending notification to students by ${reminderNotifier.email} for assignment ${reminderNotifier.assignmentId}")
         Boolean notifynow = false
         def previousRemainder = reminderNotifierRepository.findByAssignmentId(reminderNotifier.assignmentId)
         if(previousRemainder){
@@ -317,7 +339,7 @@ class CreateAssignmentRestController {
                     String subject = emailUtils.createSubject(EmailTypes.REMINDER_NOTIFIER)
                     mailService.sendHtmlMail(studentsToNotify as String[], subject, htmlMessage)
                 }.then {
-                    println("Emails sent successfully")
+                    log.info("Emails sent successfully")
                 }
             }
 
@@ -340,6 +362,8 @@ class CreateAssignmentRestController {
     @ResponseBody
     @PostMapping(value = '/teacher/duplicate/{assignmentId:.+}',produces = 'application/json')
     ResponseEntity <?> duplicateAssignment(@PathVariable(value="assignmentId", required = true) String assignmentId,@RequestBody String batch, @RequestParam(value = "questionsetid", required = false) String questionSetId){
+
+        log.info("<CreateAssignmentRestController> Duplicating the assignment ${assignmentId} by teacher for batch ${batch}")
         def refAssignment = createAssignmentRepository.findByAssignmentid(assignmentId)
         if(questionSetId){
             refAssignment.author.questionSetReferenceId = questionSetId
@@ -357,7 +381,7 @@ class CreateAssignmentRestController {
         String oldTime = refId.substring(refId.lastIndexOf('-')+1)
         String newIdWithTime = newId.replace(oldTime,System.currentTimeMillis().toString())
 
-        println("Old id is ${refId} new id is ${newIdWithTime}")
+        log.info ("Old id is ${refId} new id is ${newIdWithTime}")
         refSavedAssignment.assignmentid = newIdWithTime
         refSavedAssignment.batch = batch
 
@@ -381,8 +405,8 @@ class CreateAssignmentRestController {
             mailService.sendHtmlMail(emails, subject, htmlMessage)
         }.then{Exception exception ->
             if(exception)
-                println("encountered an exception while sending the email ${exception}")
-            println("Emails sent for assignment ${assignmentId}")
+                log.info("encountered an exception while sending the email ${exception}")
+            log.info("Emails sent for assignment ${assignmentId}")
         }
     }
 

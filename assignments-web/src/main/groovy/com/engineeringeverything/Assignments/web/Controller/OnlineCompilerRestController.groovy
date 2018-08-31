@@ -21,6 +21,8 @@ import org.apache.http.impl.client.BasicResponseHandler
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicNameValuePair
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
@@ -37,6 +39,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class OnlineCompilerRestController {
+
+    private Logger log = LoggerFactory.getLogger(OnlineCompilerRestController.class)
 
     @Value('${hacker.rank.api.key}')
     String api_key
@@ -55,6 +59,7 @@ class OnlineCompilerRestController {
     @ResponseBody
     @GetMapping(value = '/hackerrank/languages')
     public ResponseEntity<?> getlanguagecodes() {
+        log.info("<OnlineCompilerRestController> getting language codes from hackerrank api")
         def json = new JsonSlurper().parseText(new URL("http://api.hackerrank.com/checker/languages.json").getText())
         new ResponseEntity<>(json, HttpStatus.OK)
     }
@@ -64,7 +69,7 @@ class OnlineCompilerRestController {
     public def submitCode(@RequestBody CompilerInput compilerInput) {
         def testcases = [compilerInput.testcases.toString()]
         def testcasesJson = JsonOutput.toJson(testcases)
-        println(compilerInput.toString())
+        log.info("<OnlineCompilerRestController> Code editor compile and run ${compilerInput.toString()}")
         HttpPost httpPost = new HttpPost("http://api.hackerrank.com/checker/submission.json");
         CloseableHttpClient client = HttpClients.createDefault()
         List<NameValuePair> params = new ArrayList<NameValuePair>()
@@ -74,10 +79,10 @@ class OnlineCompilerRestController {
         params.add(new BasicNameValuePair("testcases","${testcasesJson}"))
         httpPost.setEntity(new UrlEncodedFormEntity(params));
         CloseableHttpResponse response = client.execute(httpPost);
-        println("status is " + response.statusLine)
-        println("respons is" + response.getEntity())
+        log.info("<OnlineCompilerRestController>status is " + response.statusLine)
+        log.info("<OnlineCompilerRestController>response is" + response.getEntity())
         String responseString = new BasicResponseHandler().handleResponse(response)
-        System.out.println(responseString)
+        log.info(responseString)
         client.close()
         responseString
     }
@@ -153,7 +158,7 @@ class OnlineCompilerRestController {
     public def submitAssignment(@RequestBody CompilerInput compilerInput){
 
         if(compilerInput.source.trim() != "") {
-
+            log.info("<OnlineCompilerRestController> Assignment compile and run ${compilerInput.toString()}")
             def assignment = createAssignmentRepository.findByAssignmentid(compilerInput.assignmentid)
             def questionNumber = assignment.questions.findIndexOf { it == compilerInput.question }
 
@@ -161,7 +166,6 @@ class OnlineCompilerRestController {
             def testcasesJson = JsonOutput.toJson(testcases)
             def expected = assignment.outputs[questionNumber]
             expected = expected.collect {
-                println(it)
                 removeUselessSpaces(it.trim())
             }
 
@@ -174,13 +178,13 @@ class OnlineCompilerRestController {
             params.add(new BasicNameValuePair("testcases", "${testcasesJson}"))
             httpPost.setEntity(new UrlEncodedFormEntity(params));
             CloseableHttpResponse response = client.execute(httpPost);
-            println("status is " + response.statusLine)
-            println("response is" + response.getEntity())
+            log.info("<OnlineCompilerRestController>status is " + response.statusLine)
+            log.info("<OnlineCompilerRestController>response is" + response.getEntity())
             String responseString = new BasicResponseHandler().handleResponse(response)
 
             def validation = validateAssignmentResult(expected, responseString)
 
-            println("Building response with ${validation} and from Hr is ${responseString} and ${expected}")
+            log.info("<OnlineCompilerRestController>Building response with ${validation} and from Hr is ${responseString} and ${expected}")
             def finalresponse = buildResponse(validation, responseString, expected, testcases)
 
             client.close()
@@ -197,7 +201,7 @@ class OnlineCompilerRestController {
 
         def actualResponse = slurper.parseText(response)
 
-        println("response is "+ actualResponse.result)
+        log.info("<OnlineCompilerRestController> assignment response is "+ actualResponse.result)
 
         def actual = actualResponse.result.stdout
 
@@ -205,20 +209,20 @@ class OnlineCompilerRestController {
             removeUselessSpaces(it.trim())
         }
 
-        println("actual is  ${actual.toString()}")
+        log.info("<OnlineCompilerRestController> actual is  ${actual.toString()}")
 
-        println("expected is ${expected.toString()}")
+        log.info("<OnlineCompilerRestController> expected is ${expected.toString()}")
 
         actual == expected
     }
 
     def removeUselessSpaces(String expected){
 
-        println("expected before trimming ${expected}")
+        log.info("<OnlineCompilerRestController> expected before trimming ${expected}")
         def splits = expected.split('\n')
         splits = splits.collect{it.trim()}
         expected = splits.join('\n')
-        println("expected after trimming ${expected}")
+        log.info("<OnlineCompilerRestController> expected after trimming ${expected}")
         expected
     }
 
@@ -233,6 +237,7 @@ class OnlineCompilerRestController {
         if(validation){
             codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.SUCCESS
         }else{
+            log.info("<OnlineCompilerRestController> Not success since expected and actual are not same now checking for compiler")
             if(jsonResponse.result.compilemessage.contains("error")) {
                 codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.COMPILER_ERROR
                 codingAssignmentResponse.errorMessage = jsonResponse.result.compilemessage

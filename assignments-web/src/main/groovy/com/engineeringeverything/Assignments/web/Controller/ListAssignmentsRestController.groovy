@@ -22,6 +22,8 @@ import com.engineeringeverything.Assignments.core.Service.PDFGenerator
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import com.engineeringeverything.Assignments.web.Converter.ObjectConverter
 import constants.AssignmentType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -44,6 +46,8 @@ import java.nio.file.Path
 
 @RestController
 class ListAssignmentsRestController {
+
+    private Logger log = LoggerFactory.getLogger(ListAssignmentsRestController.class)
 
     @Autowired
     ServiceUtilities serviceUtilities
@@ -82,6 +86,8 @@ class ListAssignmentsRestController {
     @PostMapping(value = '/teacher/list')
     public ResponseEntity<?> listAssignments (@RequestBody TeacherAssignmentList teacherAssignmentList){
 
+        log.info("<ListAssignmentsRestController> list the assignments for teacher ${teacherAssignmentList.email}")
+
         def uniqueClassId = serviceUtilities.generateUniqueClassIdForTeacher(teacherAssignmentList.batch, teacherAssignmentList.email)
 
         def assignmentid = serviceUtilities.generateFileName(uniqueClassId,teacherAssignmentList.email)
@@ -103,6 +109,8 @@ class ListAssignmentsRestController {
     @PostMapping(value = '/teacher/getquestions')
     public ResponseEntity<?> getQuestions(@RequestBody String assignmentid){
 
+        log.info("<ListAssignmentsRestController> fetching questions for a given assignment id ${assignmentid}")
+
         def assignment = createAssignmentRepository.findByAssignmentid(assignmentid)
 
         assignment ? new ResponseEntity<>(assignment.questions,HttpStatus.OK) : new ResponseEntity<>("record not found",HttpStatus.INTERNAL_SERVER_ERROR)
@@ -111,6 +119,8 @@ class ListAssignmentsRestController {
     @ResponseBody
     @PostMapping(value = '/teacher/saved/list')
     public ResponseEntity<?> listSavedAssignments (@RequestBody TeacherAssignmentList teacherAssignmentList){
+
+        log.info("<ListAssignmentsRestController> fetching saved assignments for teacher ${teacherAssignmentList.email}")
 
         def uniqueClassId = serviceUtilities.generateUniqueClassIdForTeacher(teacherAssignmentList.batch,teacherAssignmentList.email)
         def assignmentid = serviceUtilities.generateFileName(uniqueClassId, teacherAssignmentList.email)
@@ -121,6 +131,8 @@ class ListAssignmentsRestController {
     @ResponseBody
     @PostMapping(value = '/student/list')
     public ResponseEntity<?> listStudentAssignments (@RequestBody String email){
+
+        log.info("<ListAssignmentsRestController> fetching pending assignments list for student ${email}")
 
         def user = serviceUtilities.findUserByEmail(email)
         def assignmentid = serviceUtilities.generateFileName(user.university,user.college,user.branch,user.section,user.startYear,user.endYear)
@@ -136,6 +148,8 @@ class ListAssignmentsRestController {
     @ResponseBody
     @PostMapping(value = '/get/{assignmentId:.+}')
     public ResponseEntity<?> fetchAssignment(@PathVariable(value="assignmentId" , required = true) String assignmentId,@RequestBody String email){
+
+        log.info("<ListAssignmentsRestController> fetching saved assignment for student ${email} and assignment id is ${assignmentId}")
 
         CreateAssignment assignment = createAssignmentRepository.findByAssignmentid(assignmentId)
 

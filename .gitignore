@@ -24,5 +24,7 @@ dist/
 nbdist/
 .nb-gradle/
 
+assignments-web/beyondclass-assignments.log
+
 gradle/wrapper/gradle-wrapper.jar
 gradle/wrapper/gradle-wrapper.properties

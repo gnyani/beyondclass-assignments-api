@@ -14,6 +14,8 @@ import com.engineeringeverything.Assignments.core.Repositories.UserRepository
 import com.engineeringeverything.Assignments.core.Service.ServiceUtilities
 import com.engineeringeverything.Assignments.web.Converter.SubmitAssignmentConverter
 import constants.AssignmentType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -26,6 +28,8 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 class StatsRestController {
+
+    private Logger log = LoggerFactory.getLogger(StatsRestController.class)
 
     @Autowired
     CreateAssignmentRepository createAssignmentRepository
@@ -50,6 +54,8 @@ class StatsRestController {
 
     @PostMapping(value = '/teacher/stats')
     public ResponseEntity<?> getStatsForAssignment(@RequestBody String assignmentId){
+
+        log.info("<StatsRestController> generating stats for assignment id ${assignmentId}")
 
         TeacherAssignmentStats teacherAssignmentStats = new TeacherAssignmentStats()
 
@@ -96,6 +102,9 @@ class StatsRestController {
 
     @PostMapping(value = '/student/submission/stats')
     public ResponseEntity<?> getSubmissions(@RequestBody String email){
+
+        log.info("<StatsRestController> generating stats for student id ${email}")
+
         StudentSubmissionStats studentSubmissionStats = new StudentSubmissionStats()
         def user = serviceUtilities.findUserByEmail(email)
         studentSubmissionStats.setTotalPoints(user?.points)
