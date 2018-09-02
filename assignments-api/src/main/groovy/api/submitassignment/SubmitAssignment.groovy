@@ -96,26 +96,37 @@ class SubmitAssignment {
 
         if(codingAssignmentResponse == null && userValidity == null) {
             stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(formatDuration(timespent)).append(',').append(marksGiven)
-                    .append(',').append(insights)
+                    .append(',').append(insights).append(',').append(convertQuestion(questionIndex))
         }else if(codingAssignmentResponse == null && userValidity != null) {
             stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(formatDuration(timespent)).append(',').append(marksGiven)
-                    .append(',').append(insights?.insight1)
+                    .append(',').append(insights?.insight1).append(',').append(convertQuestion(questionIndex))
         }else {
             stringBuilder.append(email).append(',').append(status).append(',').append(submissionDate).append(',').append(formatDuration(timespent))
-                    .append(',').append(marksGiven).append(',').append(insights)
+                    .append(',').append(marksGiven).append(',').append(insights).append(',').append(convertQuestion(questionIndex))
 
             codingAssignmentResponse.eachWithIndex { var , index ->
                 if (var.codingAssignmentStatus == CodingAssignmentStatus.TESTS_FAILED) {
                     stringBuilder.append('\n').append(',,,,,,,,,,').append("Question ${index+1}").append(',').append(var.codingAssignmentStatus).append(',')
-                            .append(var.totalCount).append(',').append(var.passCount)
+                            .append(var.totalCount).append(',').append(var.passCount).append(',').append(convertQuestion(questionIndex))
                 } else {
                     stringBuilder.append('\n').append(',,,,,,,,,,').append("Question ${index+1}").append(',').append(var.codingAssignmentStatus).append(',')
-                            .append('NA').append(',').append('NA')
+                            .append('NA').append(',').append('NA').append(',').append(convertQuestion(questionIndex))
                 }
             }
         }
 
         stringBuilder
+    }
+
+    public static String convertQuestion(List indexes){
+
+        StringBuilder stringBuilder = new StringBuilder()
+
+        indexes.each {
+            stringBuilder.append(it+1).append(';')
+        }
+
+        stringBuilder.toString()
     }
 
     public static String formatDuration(long millis) {

@@ -22,11 +22,11 @@ class CsvGenerator {
         StringBuilder stringBuilder = new StringBuilder()
 
         if(createAssignment.assignmentType == AssignmentType.THEORY) {
-            stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1,Insight2,Insight3,Insight4,Insight5").append("\n")
+            stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1,Insight2,Insight3,Insight4,Insight5,Question Numbers").append("\n")
         }else if(createAssignment.assignmentType == AssignmentType.CODING){
-            stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1,Insight2,Insight3,Insight4,Insight5,AssignmentStatus,TotalTestCasesCount,TotalPassedCount").append("\n")
+            stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1,Insight2,Insight3,Insight4,Insight5,AssignmentStatus,TotalTestCasesCount,TotalPassedCount,Question Numbers").append("\n")
         }else if(createAssignment.assignmentType == AssignmentType.OBJECTIVE){
-            stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1").append("\n")
+            stringBuilder.append("Roll Number,Email,Status,SubmissionDate,TimeSpent,Marks Given,Insight1,Question Numbers").append("\n")
         }
 
         list ?. each {
