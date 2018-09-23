@@ -54,6 +54,8 @@ class OnlineCompilerRestController {
     @Autowired
     SubmitAssignmentRepository submitAssignmentRepository
 
+    static final int hardTimeout = 15 //seconds
+
     def slurper = new JsonSlurper()
 
     @ResponseBody
@@ -108,8 +110,9 @@ class OnlineCompilerRestController {
                 question = programmingAssignment.questions[i]
                 assignmentid = programmingAssignment.tempassignmentid
             }
-            if(compilerInput.source.trim() != "")
-            responses[i] = submitAssignment(compilerInput)
+            if(compilerInput.source.trim() != ""){
+                responses[i] = submitAssignment(compilerInput)
+            }
             else{
                 CodingAssignmentResponse codingAssignmentResponse = new CodingAssignmentResponse()
                 codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.RUNTIME_ERROR
@@ -177,19 +180,34 @@ class OnlineCompilerRestController {
             params.add(new BasicNameValuePair("api_key", "${api_key}"))
             params.add(new BasicNameValuePair("testcases", "${testcasesJson}"))
             httpPost.setEntity(new UrlEncodedFormEntity(params));
-            CloseableHttpResponse response = client.execute(httpPost);
-            log.info("<OnlineCompilerRestController>status is " + response.statusLine)
-            log.info("<OnlineCompilerRestController>response is" + response.getEntity())
-            String responseString = new BasicResponseHandler().handleResponse(response)
+            try{
+                TimerTask task = new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (httpPost != null) {
+                            httpPost.abort()
+                        }
+                    }
+                }
+                new Timer(true).schedule(task, hardTimeout * 1000)
+                CloseableHttpResponse response = client.execute(httpPost)
+                log.info("<OnlineCompilerRestController>status is " + response.statusLine)
+                log.info("<OnlineCompilerRestController>response is" + response.getEntity())
+                String responseString = new BasicResponseHandler().handleResponse(response)
 
-            def validation = validateAssignmentResult(expected, responseString)
+                def validation = validateAssignmentResult(expected, responseString)
 
-            log.info("<OnlineCompilerRestController>Building response with ${validation} and from Hr is ${responseString} and ${expected}")
-            def finalresponse = buildResponse(validation, responseString, expected, testcases)
+                log.info("<OnlineCompilerRestController>Building response with ${validation} and from Hr is ${responseString} and ${expected}")
+                def finalresponse = buildResponse(validation, responseString, expected, testcases, false)
 
-            client.close()
+                client.close()
 
-            finalresponse
+                return  finalresponse
+            } catch (SocketException e){
+                log.info("<OnlineCompilerRestController> timeout issue due to infinite loop while compiling assignment")
+                def finalresponse = buildResponse(false, null, null, null, true)
+                finalresponse
+            }
         }else{
             new ResponseEntity<>("source cant be empty",HttpStatus.BAD_REQUEST)
         }
@@ -226,54 +244,58 @@ class OnlineCompilerRestController {
         expected
     }
 
-    def buildResponse(Boolean validation, def response, def expected, def expectedInput){
-
+    def buildResponse(Boolean validation, def response, def expected, def expectedInput, Boolean timeout){
         CodingAssignmentResponse codingAssignmentResponse = new CodingAssignmentResponse()
-
-        def jsonResponse = slurper.parseText(response)
-
-        def message = jsonResponse.result.message
-
-        if(validation){
-            codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.SUCCESS
+        if(timeout){
+            codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.TIME_OUT
+            codingAssignmentResponse.errorMessage = 'Code took more than 15 seconds to execute, Sign of a possible infinite loop'
+            return  codingAssignmentResponse
         }else{
-            log.info("<OnlineCompilerRestController> Not success since expected and actual are not same now checking for compiler")
-            if(jsonResponse.result.compilemessage.contains("error")) {
-                codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.COMPILER_ERROR
-                codingAssignmentResponse.errorMessage = jsonResponse.result.compilemessage
-            }
-            else if((message && message.contains("Runtime error")) || (message && message.contains("Segmentation Fault")) ){
-                codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.RUNTIME_ERROR
-                codingAssignmentResponse.errorMessage = jsonResponse.result.stderr
-                int index = message.findIndexOf{it == "Runtime error"} > 0 ? message.findIndexOf{it == "Runtime error"}: 0
-                codingAssignmentResponse.expectedInput = expectedInput[index]
+            def jsonResponse = slurper.parseText(response)
+
+            def message = jsonResponse.result.message
+
+            if(validation){
+                codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.SUCCESS
             }else{
-                String[] actual = jsonResponse.result.stdout
-                actual = actual.collect{removeUselessSpaces(it.trim())}
-                int i = 0
-                def flag
-                 for(int j=0; j< expected.size(); j++){
-                     if(actual[i] != expected[j])
-                     {
-                         flag = true
-                         break;
-                     }
-                     i++
-                 }
-                if(flag){
-                    codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.TESTS_FAILED
-                    codingAssignmentResponse.failedCase = i + 1
-                    codingAssignmentResponse.totalCount = expected.size()
-                    codingAssignmentResponse.passCount = i
-                    codingAssignmentResponse.expected = expected[i]
-                    codingAssignmentResponse.actual = actual[i]
-                    codingAssignmentResponse.expectedInput = expectedInput[i]
+                log.info("<OnlineCompilerRestController> Not success since expected and actual are not same now checking for compiler")
+                if(jsonResponse.result.compilemessage.contains("error")) {
+                    codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.COMPILER_ERROR
+                    codingAssignmentResponse.errorMessage = jsonResponse.result.compilemessage
+                }
+                else if((message && message.contains("Runtime error")) || (message && message.contains("Segmentation Fault")) ){
+                    codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.RUNTIME_ERROR
+                    codingAssignmentResponse.errorMessage = jsonResponse.result.stderr
+                    int index = message.findIndexOf{it == "Runtime error"} > 0 ? message.findIndexOf{it == "Runtime error"}: 0
+                    codingAssignmentResponse.expectedInput = expectedInput[index]
+                }else{
+                    String[] actual = jsonResponse.result.stdout
+                    actual = actual.collect{removeUselessSpaces(it.trim())}
+                    int i = 0
+                    def flag
+                    for(int j=0; j< expected.size(); j++){
+                        if(actual[i] != expected[j])
+                        {
+                            flag = true
+                            break;
+                        }
+                        i++
+                    }
+                    if(flag){
+                        codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.TESTS_FAILED
+                        codingAssignmentResponse.failedCase = i + 1
+                        codingAssignmentResponse.totalCount = expected.size()
+                        codingAssignmentResponse.passCount = i
+                        codingAssignmentResponse.expected = expected[i]
+                        codingAssignmentResponse.actual = actual[i]
+                        codingAssignmentResponse.expectedInput = expectedInput[i]
+                    }
                 }
             }
+            codingAssignmentResponse.runtime = jsonResponse.result.time
+            codingAssignmentResponse.memory = jsonResponse.result.memory
+            codingAssignmentResponse
         }
-        codingAssignmentResponse.runtime = jsonResponse.result.time
-        codingAssignmentResponse.memory = jsonResponse.result.memory
-        codingAssignmentResponse
     }
 
 }
