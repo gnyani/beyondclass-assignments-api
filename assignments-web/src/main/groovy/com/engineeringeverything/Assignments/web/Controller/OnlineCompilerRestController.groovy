@@ -54,7 +54,7 @@ class OnlineCompilerRestController {
     @Autowired
     SubmitAssignmentRepository submitAssignmentRepository
 
-    static final int hardTimeout = 35 //seconds
+    static final int hardTimeout = 5 //seconds
 
     def slurper = new JsonSlurper()
 
@@ -248,7 +248,7 @@ class OnlineCompilerRestController {
         CodingAssignmentResponse codingAssignmentResponse = new CodingAssignmentResponse()
         if(timeout){
             codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.TIME_OUT
-            codingAssignmentResponse.errorMessage = 'Code took more than 15 seconds to execute, Sign of a possible infinite loop'
+            codingAssignmentResponse.errorMessage = "Code took more than ${hardTimeout} seconds to execute, Sign of a possible infinite loop ?"
             return  codingAssignmentResponse
         }else{
             def jsonResponse = slurper.parseText(response)
