@@ -54,7 +54,7 @@ class OnlineCompilerRestController {
     @Autowired
     SubmitAssignmentRepository submitAssignmentRepository
 
-    static final int hardTimeout = 15 //seconds
+    static final int hardTimeout = 35 //seconds
 
     def slurper = new JsonSlurper()
 
