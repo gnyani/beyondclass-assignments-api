@@ -94,8 +94,5 @@ class CreateAssignment {
     HashMap<String,Date> submittedDates
 
     @JsonProperty
-    boolean postedToNetwork;
-
-    @JsonProperty
-    List<String> Threshold
+    boolean postedToNetwork
 }

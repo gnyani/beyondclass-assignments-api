@@ -62,8 +62,9 @@ class OnlineCompilerRestController {
     @GetMapping(value = '/hackerrank/languages')
     public ResponseEntity<?> getlanguagecodes() {
         log.info("<OnlineCompilerRestController> getting language codes from hackerrank api")
-        def json = new JsonSlurper().parseText(new URL("http://api.hackerrank.com/checker/languages.json").getText())
-        new ResponseEntity<>(json, HttpStatus.OK)
+//        def json = new JsonSlurper().parseText(new URL("http://api.hackerrank.com/checker/languages.json").getText())
+//        new ResponseEntity<>(json, HttpStatus.OK)
+        new ResponseEntity<>("", HttpStatus.OK)
     }
 
     @ResponseBody
@@ -189,16 +190,18 @@ class OnlineCompilerRestController {
                         }
                     }
                 }
-                new Timer(true).schedule(task, hardTimeout * 1000)
-                CloseableHttpResponse response = client.execute(httpPost)
-                log.info("<OnlineCompilerRestController>status is " + response.statusLine)
-                log.info("<OnlineCompilerRestController>response is" + response.getEntity())
-                String responseString = new BasicResponseHandler().handleResponse(response)
+                  new Timer(true).schedule(task, hardTimeout * 1000)
+//                CloseableHttpResponse response = client.execute(httpPost)
+//                log.info("<OnlineCompilerRestController>status is " + response.statusLine)
+//                log.info("<OnlineCompilerRestController>response is" + response.getEntity())
+//                String responseString = new BasicResponseHandler().handleResponse(response)
+                  String responseString = "{}"
 
-                def validation = validateAssignmentResult(expected, responseString)
+//                def validation = validateAssignmentResult(expected, responseString)
 
-                log.info("<OnlineCompilerRestController>Building response with ${validation} and from Hr is ${responseString} and ${expected}")
-                def finalresponse = buildResponse(validation, responseString, expected, testcases, false)
+                log.info("<OnlineCompilerRestController>Building response with ${true} and from Hr is ${responseString} and ${expected}")
+                //def finalresponse = buildResponse(validation, responseString, expected, testcases, false)
+                def finalresponse = buildResponse(true, responseString, expected, testcases, false)
 
                 client.close()
 
@@ -251,12 +254,12 @@ class OnlineCompilerRestController {
             codingAssignmentResponse.errorMessage = "Code took more than ${hardTimeout} seconds to execute, Sign of a possible infinite loop ?"
             return  codingAssignmentResponse
         }else{
-            def jsonResponse = slurper.parseText(response)
-
-            def message = jsonResponse.result.message
+//            def jsonResponse = slurper.parseText(response)
+//
+//            def message = jsonResponse.result.message
 
             if(validation){
-                codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.SUCCESS
+                //codingAssignmentResponse.codingAssignmentStatus = CodingAssignmentStatus.SUCCESS
             }else{
                 log.info("<OnlineCompilerRestController> Not success since expected and actual are not same now checking for compiler")
                 if(jsonResponse.result.compilemessage.contains("error")) {
@@ -292,8 +295,8 @@ class OnlineCompilerRestController {
                     }
                 }
             }
-            codingAssignmentResponse.runtime = jsonResponse.result.time
-            codingAssignmentResponse.memory = jsonResponse.result.memory
+//            codingAssignmentResponse.runtime = jsonResponse.result.time
+//            codingAssignmentResponse.memory = jsonResponse.result.memory
             codingAssignmentResponse
         }
     }
